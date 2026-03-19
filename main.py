@@ -18,18 +18,6 @@ controller = FastAPI()
 # Настраиваем LLM-модель Ollama
 llm = ChatOllama(model=config.LLM_MODEL, temperature=0, base_url=config.LLM_BASE_URL)
 
-# # AUTH Cookie
-# @controller.get("/set-cookie")
-# def create_cookie(response: Response):
-    
-#     response.set_cookie(key="session_id", value=Auth.authUser("user", "user"))
-#     return {"message": "Cookie has been set"}
-
-# @controller.get("/get-cookie")
-# async def get_cookie(request: Request):
-#     print(request.cookies.get("session_id"))
-#     return request.cookies
-
 @controller.post("/auth")
 def auth_api(request: Request, response: Response, username: Annotated[str, Form()], password: Annotated[str, Form()]):
     '''
