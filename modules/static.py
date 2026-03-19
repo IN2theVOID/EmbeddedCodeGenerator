@@ -149,3 +149,18 @@ static_form = '''
 </body>
 </html>
 '''
+
+auth_form = '''
+<html>
+Сервис генерации кода для встраиваемых систем на основе ИИ<br>
+Авторизация:<br>
+<form action="/auth" method="post">
+  <label for="name">Username:</label>
+  <input type="text" id="username" name="username" />
+  <br>
+  <label for="password">Password:</label>
+  <input type="password" id="password" name="password" />
+  <input type="submit" value="Login" />
+</form>
+</html>
+'''
