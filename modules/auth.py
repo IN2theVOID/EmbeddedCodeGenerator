@@ -27,7 +27,7 @@ class AuthResponseFactory:
         if isAuth:
             token = "TOKEN_" + username + "_" + str(datetime.datetime.now()) + "_ROLE:"+ USER_ROLES[username]
             auth_tokens.append(token)
-        
+
         authResponse.cookieString = token
         return authResponse
 
@@ -57,8 +57,12 @@ class Auth:
         print(auth_tokens)
         role = None
         if token in auth_tokens:
-            role = token.split("ROLE:")[-1]
+            role = Auth.getRoleFromToken(token=token)
             print(role)
             return True, role
         else:
             return False, role
+        
+    @staticmethod
+    def getRoleFromToken(token: str) -> str:
+        return token.split("ROLE:")[-1]

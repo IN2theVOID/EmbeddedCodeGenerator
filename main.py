@@ -2,14 +2,14 @@ from langchain_ollama import ChatOllama
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from fastapi import FastAPI, Response, Cookie, Request, Form
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
 import uvicorn
 import html
 from typing import Annotated
 from pydantic import BaseModel
 
 import config
-from modules.static import static_form, auth_form
+from modules.static import generator_form, auth_form, admin_form
 from modules.auth import Auth, auth_tokens
 
 # Создаем контроллер API
@@ -33,8 +33,17 @@ def auth_api(request: Request, response: Response, username: Annotated[str, Form
     
     authResponse = Auth.authUser(username, password)
     if authResponse.isAuth:
-        response.set_cookie(key="session_id", value=authResponse.cookieString)
-        return {"message": "Авторизация успешна", "auth_tokens": auth_tokens}
+        
+        # return {"message": "Авторизация успешна", "auth_tokens": auth_tokens}
+        match Auth.getRoleFromToken(authResponse.cookieString):
+            case "user":
+                response = RedirectResponse(url="/code_generator", status_code=303)
+                response.set_cookie(key="session_id", value=authResponse.cookieString)
+                return response
+            case "admin":
+                response = RedirectResponse(url="/admin_console", status_code=303)
+                response.set_cookie(key="session_id", value=authResponse.cookieString)
+                return response
     else:
         return {"message": "Авторизация неуспешна"}
 
@@ -43,13 +52,22 @@ def auth_api(request: Request, response: Response, username: Annotated[str, Form
 def auth_page() -> HTMLResponse:
     return HTMLResponse(content=auth_form, status_code=200)
 
-# Генератор
+# Консоль администратора
+@controller.get("/admin_console")
+def admin_console(request: Request) -> HTMLResponse:
+    if request.cookies.get("session_id"):
+        isAuth, role = Auth.checkAuth(request.cookies.get("session_id"))
+        if isAuth and role == "admin":
+            return HTMLResponse(content=admin_form, status_code=200)
+    return {"message": "Вы не авторизованы!"}
+
+# Генератор (страница)
 @controller.get("/code_generator")
 def emb_code_gen_form(request: Request) -> HTMLResponse:
     if request.cookies.get("session_id"):
         isAuth, role = Auth.checkAuth(request.cookies.get("session_id"))
-        if isAuth:
-            return HTMLResponse(content=static_form, status_code=200)
+        if isAuth and role == "user":
+            return HTMLResponse(content=generator_form, status_code=200)
     return {"message": "Вы не авторизованы!"}
 
 # Обработчик GET-запросов, апи генератора

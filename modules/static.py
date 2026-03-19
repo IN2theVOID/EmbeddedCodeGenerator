@@ -1,4 +1,4 @@
-static_form = '''
+generator_form = '''
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -162,5 +162,11 @@ auth_form = '''
   <input type="password" id="password" name="password" />
   <input type="submit" value="Login" />
 </form>
+</html>
+'''
+
+admin_form = '''
+<html>
+Форма администрирования
 </html>
 '''
