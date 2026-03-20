@@ -151,22 +151,126 @@ generator_form = '''
 '''
 
 auth_form = '''
-<html>
-Сервис генерации кода для встраиваемых систем на основе ИИ<br>
-Авторизация:<br>
-<form action="/auth" method="post">
-  <label for="name">Username:</label>
-  <input type="text" id="username" name="username" />
-  <br>
-  <label for="password">Password:</label>
-  <input type="password" id="password" name="password" />
-  <input type="submit" value="Login" />
-</form>
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Авторизация — Генератор кода</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .form-container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h2 {
+            color: #333;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #555;
+        }
+        input[type="text"],
+        input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        input:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .info {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #e7f3fe;
+            border-left: 4px solid #2196F3;
+            font-size: 13px;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <h2>🔐 Авторизация</h2>
+        
+        <form action="/auth" method="post">
+            
+            <div class="form-group">
+                <label for="username">Имя пользователя:</label>
+                <input 
+                    type="text" 
+                    id="username" 
+                    name="username" 
+                    placeholder="Введите ваш логин" 
+                    required
+                >
+                <small>Введите ваш логин</small>
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Пароль:</label>
+                <input 
+                    type="password" 
+                    id="password" 
+                    name="password" 
+                    placeholder="••••••••" 
+                    required
+                >
+                <small>Введите ваш пароль</small>
+            </div>
+            
+            <button type="submit">Войти</button>
+            
+        </form>
+        
+        <div class="info">
+             <strong>ℹ️ Примечание:</strong> 
+             Для доступа к дополнительным функциям требуется авторизация.
+         </div>
+    </div>
+</body>
 </html>
 '''
 
 admin_form = '''
 <html>
-Форма администрирования
+Форма администрирования<br>
+<a>Языки</a><br>
+<a>Платформы</a><br>
+<a>Пользователи</a><br>
+<a>Модели</a><br>
 </html>
 '''
