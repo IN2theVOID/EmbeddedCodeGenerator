@@ -1,0 +1,3 @@
+
+class NoRoleMappingToUser(BaseException):
+    pass

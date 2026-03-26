@@ -15,6 +15,9 @@ from modules.auth import Auth, auth_tokens
 # Создаем контроллер API
 controller = FastAPI()
 
+# Авторизация
+auth = Auth()
+
 # Настраиваем LLM-модель Ollama
 llm = ChatOllama(model=config.LLM_MODEL, temperature=0, base_url=config.LLM_BASE_URL)
 
@@ -26,24 +29,21 @@ def auth_api(request: Request, response: Response, username: Annotated[str, Form
     '''
 
     if request.cookies.get("session_id"):
-        isAuth, role = Auth.checkAuth(request.cookies.get("session_id"))
+        isAuth, role = auth.checkAuth(request.cookies.get("session_id"))
         print(isAuth)
         if isAuth:
             return {"message": "Вы уже авторизованы", "role": role}
     
-    authResponse = Auth.authUser(username, password)
+    authResponse = auth.authUser(username, password)
     if authResponse.isAuth:
-        
-        # return {"message": "Авторизация успешна", "auth_tokens": auth_tokens}
-        match Auth.getRoleFromToken(authResponse.cookieString):
+        response = RedirectResponse(url="/", status_code=303)
+        match auth.getRoleFromToken(authResponse.cookieString):
             case "user":
                 response = RedirectResponse(url="/code_generator", status_code=303)
-                response.set_cookie(key="session_id", value=authResponse.cookieString)
-                return response
             case "admin":
                 response = RedirectResponse(url="/admin_console", status_code=303)
-                response.set_cookie(key="session_id", value=authResponse.cookieString)
-                return response
+        response.set_cookie(key="session_id", value=authResponse.cookieString)
+        return response
     else:
         return {"message": "Авторизация неуспешна"}
 
@@ -56,7 +56,7 @@ def auth_page() -> HTMLResponse:
 @controller.get("/admin_console")
 def admin_console(request: Request) -> HTMLResponse:
     if request.cookies.get("session_id"):
-        isAuth, role = Auth.checkAuth(request.cookies.get("session_id"))
+        isAuth, role = auth.checkAuth(request.cookies.get("session_id"))
         if isAuth and role == "admin":
             return HTMLResponse(content=admin_form, status_code=200)
     return {"message": "Вы не авторизованы!"}
@@ -65,7 +65,7 @@ def admin_console(request: Request) -> HTMLResponse:
 @controller.get("/code_generator")
 def emb_code_gen_form(request: Request) -> HTMLResponse:
     if request.cookies.get("session_id"):
-        isAuth, role = Auth.checkAuth(request.cookies.get("session_id"))
+        isAuth, role = auth.checkAuth(request.cookies.get("session_id"))
         if isAuth and role == "user":
             return HTMLResponse(content=generator_form, status_code=200)
     return {"message": "Вы не авторизованы!"}
