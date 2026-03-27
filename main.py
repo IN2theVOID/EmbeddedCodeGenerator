@@ -3,17 +3,18 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from fastapi import FastAPI, Response, Cookie, Request, Form
 from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.templating import Jinja2Templates
 import uvicorn
 import html
 from typing import Annotated
 from pydantic import BaseModel
 
 import config
-from modules.static import generator_form, auth_form, admin_form
 from modules.auth import Auth, auth_tokens
 
 # Создаем контроллер API
 controller = FastAPI()
+templates = Jinja2Templates(directory="templates")
 
 # Авторизация
 auth = Auth()
@@ -42,6 +43,10 @@ def auth_api(request: Request, response: Response, username: Annotated[str, Form
                 response = RedirectResponse(url="/code_generator", status_code=303)
             case "admin":
                 response = RedirectResponse(url="/admin_console", status_code=303)
+            case "auditor":
+                response = RedirectResponse(url="/audit", status_code=303)
+            case "viewer":
+                response = RedirectResponse(url="/dashboard", status_code=303)
         response.set_cookie(key="session_id", value=authResponse.cookieString)
         return response
     else:
@@ -49,8 +54,8 @@ def auth_api(request: Request, response: Response, username: Annotated[str, Form
 
 # Авторизация
 @controller.get("/")
-def auth_page() -> HTMLResponse:
-    return HTMLResponse(content=auth_form, status_code=200)
+def auth_page(request: Request) -> HTMLResponse:
+    return templates.TemplateResponse("auth.html", {"request": request})
 
 # Консоль администратора
 @controller.get("/admin_console")
@@ -58,7 +63,7 @@ def admin_console(request: Request) -> HTMLResponse:
     if request.cookies.get("session_id"):
         isAuth, role = auth.checkAuth(request.cookies.get("session_id"))
         if isAuth and role == "admin":
-            return HTMLResponse(content=admin_form, status_code=200)
+            return templates.TemplateResponse("admin.html", {"request": request})
     return {"message": "Вы не авторизованы!"}
 
 # Генератор (страница)
@@ -67,8 +72,19 @@ def emb_code_gen_form(request: Request) -> HTMLResponse:
     if request.cookies.get("session_id"):
         isAuth, role = auth.checkAuth(request.cookies.get("session_id"))
         if isAuth and role == "user":
-            return HTMLResponse(content=generator_form, status_code=200)
+            return templates.TemplateResponse("generator.html", {"request": request})
     return {"message": "Вы не авторизованы!"}
+
+@controller.get("/audit")
+def audit_form(request: Request) -> HTMLResponse:
+    if request.cookies.get("session_id"):
+        isAuth, role = auth.checkAuth(request.cookies.get("session_id"))
+        if isAuth and role == "auditor":
+            return templates.TemplateResponse(
+                "audit.html", {"request": request, 
+                               "name": "Auditor", 
+                               "message": "test"})
+    return {"message": "Вы не авторизованы!"}   
 
 # Обработчик GET-запросов, апи генератора
 @controller.get("/emb_code_gen", response_class=HTMLResponse)
