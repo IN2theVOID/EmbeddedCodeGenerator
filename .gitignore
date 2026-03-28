@@ -13,3 +13,5 @@ venv
 
 # db
 *.db
+
+test.py

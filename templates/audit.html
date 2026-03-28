@@ -1,10 +1,211 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
-    <title>FastAPI HTML Template</title>
+    <meta charset="UTF-8">
+    <title>Панель аудита</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f5f7fa;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            padding: 25px 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        h2 {
+            color: #2c3e50;
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 12px;
+            margin-top: 0;
+        }
+
+        /* НОВЫЕ СТИЛИ ДЛЯ ФОРМЫ ПОИСКА */
+        .search-bar {
+             background-color: #fff;
+             padding: 15px;
+             border-radius: 6px;
+             box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+             display: flex;
+             gap: 10px; /* Отступ между полем и кнопкой */
+             margin-bottom: 25px; /* Отступ от таблицы */
+         }
+
+         .search-bar input[type="text"] {
+             flex: 1; /* Растягивается на всю доступную ширину */
+             padding: 10px 12px;
+             border: 1px solid #ccc;
+             border-radius: 4px;
+             font-size: 1em;
+         }
+
+         .search-bar button {
+             padding: 10px 20px;
+             background-color: #3498db; /* Синий цвет кнопки */
+             color: white;
+             border: none;
+             border-radius: 4px;
+             cursor: not-allowed; /* Курсор "запрещено" */
+             opacity: 0.7; /* Кнопка выглядит неактивной */
+             font-weight: bold;
+             transition: opacity 0.2s ease;
+         }
+         
+         .filter-bar {
+             background-color: #fff;
+             padding: 15px;
+             border-radius: 0 0 6px 6px; /* Скругление только снизу */
+             border-top: 1px solid #eee; /* Отделяющая линия сверху */
+             display: flex;
+             gap: 10px;
+         }
+
+         .filter-bar select {
+             flex: 1; /* Растягивает выпадающий список */
+             padding: 10px 12px;
+             border: 1px solid #ccc;
+             border-radius: 4px;
+             font-size: 1em;
+         }
+
+         .filter-bar button {
+             padding: 10px 20px;
+             background-color: #2ecc71; /* Зеленый цвет для кнопки действия */
+             color: white;
+             border: none;
+             border-radius: 4px;
+             cursor: not-allowed;
+             opacity: 0.7;
+         }
+
+        .user-info {
+            background-color: #e8f5e9; /* Светло-зеленый */
+            color: #2e7d32; /* Темно-зеленый */
+            padding: 12px 15px;
+            border-radius: 6px;
+            margin-bottom: 25px;
+            font-size: 1.1em;
+        }
+
+        .audit-logs {
+            margin-top: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #eaeaea;
+        }
+
+        th {
+            background-color: #f2f2f2;
+            color: #555;
+        }
+
+        tr:hover {
+            background-color: #f9f9f9;
+        }
+
+        .status-success {
+            color: #155724; /* Темно-зеленый для текста */
+        }
+
+        .status-success::before {
+            content: '✅ ';
+            color: #28a745; /* Цвет иконки */
+        }
+
+        .status-error {
+            color: #721c24; /* Темно-красный для текста */
+        }
+
+        .status-error::before {
+            content: '❌ ';
+            color: #dc3545; /* Цвет иконки */
+        }
+
+        .empty-state {
+             color: #999;
+             font-style: italic;
+             text-align: center;
+             padding: 30px;
+             border-radius: 6px;
+             background-color: #fafafa;
+             margin-top: 20px;
+         }
+    </style>
 </head>
 <body>
-    <h1>Welcome, {{ name }}!</h1>
-    <p>{{ message }}</p>
+    <div class="container">
+        <h2>Панель аудита</h2>
+
+        <!-- Блок информации о пользователе -->
+        <div class="user-info">
+           <strong>Текущий пользователь:</strong> {{ name }}
+        </div>
+
+        <div class="search-bar">
+            <input type="text" placeholder="Поиск по событиям..." disabled>
+            <button disabled>Найти</button>
+        </div>
+  
+        <div class="filter-bar">
+            <select disabled>
+                <option value="">Все статусы</option>
+                <option value="success">Успех</option>
+                <option value="error">Ошибка</option>
+                <!-- Можно добавить больше опций -->
+                <option value="warning">Предупреждение</option>
+                <option value="info">Информация</option>
+            </select>
+            <button disabled>Применить</button>
+        </div>
+
+        <!-- Блок с логами аудита -->
+        <section class="audit-logs">
+            
+            {% if message %}
+                <h3>Последние события аудита</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Дата и время</th>
+                            <th>Пользователь</th>
+                            <th>Запись</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in message %}
+                            <tr>
+                                <td>{{ item[0]}}</td>
+                                <td>{{ item[1] }}</td>
+                                <td class="status-{{ item.status }}">{{ item[2] }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <div class="empty-state">
+                    <p>📭 События аудита отсутствуют.</p>
+                    <p>Система не зафиксировала никаких действий.</p>
+                </div>
+           {% endif %}
+
+        </section>
+    </div>
 </body>
 </html>
