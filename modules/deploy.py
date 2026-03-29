@@ -9,6 +9,8 @@ class Deploy(ABC):
 
 class DeployToDevice(Deploy):
     def deploy(self, devices, generation):
+        # Список для сбора результатов выполнения каждого скрипта
+        deployment_results = []
         info = Info()
         code = info.getGenerationDataByTask(generation)[0][1]
         print(code)
@@ -23,7 +25,16 @@ class DeployToDevice(Deploy):
                 file.write(code)
 
             script = "deploy_scripts/" + type + ".sh"
+            result = subprocess.run([script, "code.txt", ip], capture_output=True, text=True)
+            device_result = {
+                "label": label,
+                "ip": ip,
+                "type": type,
+                "returncode": result.returncode, # Код возврата (0 - успех)
+                "stdout": result.stdout,         # Стандартный вывод (логи скрипта)
+                "stderr": result.stderr          # Ошибки (если есть)
+            }
+            
+            deployment_results.append(device_result)
 
-            subprocess.run([script, "code.txt", ip])
-
-        return True
+        return deployment_results

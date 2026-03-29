@@ -1,3 +1,5 @@
+from urllib import response
+
 from fastapi.responses import HTMLResponse
 
 from fastapi import FastAPI, Response, Cookie, Request, Form
@@ -154,11 +156,12 @@ def deploy_api(
     print(f"Выбранные устройства: {devices}")
     print(f"Код генерации: {generation}")
 
-    deploy.deploy(devices=devices, generation=generation)
+    response = deploy.deploy(devices=devices, generation=generation)
 
     # except:
     #     return {"message": "Ошибка установки!"}  
-    return {"message": "Установка кода '" + str(generation) + "' на устройства '" + str(devices) + "' успешно выполнена!"} 
+    # return {"message": "Установка кода '" + str(generation) + "' на устройства '" + str(devices) + "' успешно выполнена!"} 
+    return {"message": response}
 
 @controller.get("/audit")
 def audit_form(request: Request) -> HTMLResponse:
