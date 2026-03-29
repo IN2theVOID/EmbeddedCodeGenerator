@@ -51,7 +51,7 @@ class Audit:
         for record in result:
             yield record
 
-class Admin:
+class Info:
     def __init__(self) -> None:
         self._connection = sqlite3.connect("database.db", check_same_thread=False)
         self._cursor = self._connection.cursor()
@@ -60,4 +60,24 @@ class Admin:
         self._cursor.execute("SELECT " + columns + " FROM " + table)
         result = self._cursor.fetchall()
         for record in result:
-            yield record       
+            yield record
+    
+    def getDeviceDataByLabel(self, label: str):
+        self._cursor.execute("SELECT * FROM devices WHERE label = '" + label + "'")
+        result = self._cursor.fetchall()
+        return result
+    
+    def getGenerationDataByTask(self, task: str):
+        self._cursor.execute("SELECT * FROM generations WHERE task = '" + task + "'")
+        result = self._cursor.fetchall()
+        return result
+
+
+class Generations:
+    def __init__(self) -> None:
+        self._connection = sqlite3.connect("database.db", check_same_thread=False)
+        self._cursor = self._connection.cursor()
+
+    def add_generation(self, task: str, code: str):
+        self._cursor.execute("INSERT INTO generations (task, code) VALUES (?, ?)", (task, code))
+        self._connection.commit()

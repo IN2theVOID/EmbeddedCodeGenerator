@@ -4,7 +4,7 @@ from modules.exceptions import NoRoleMappingToUser
 
 with sqlite3.connect("database.db", check_same_thread=False) as connection:
     cursor = connection.cursor()
-    
+
     # DROP
     cursor.execute("DROP TABLE IF EXISTS users")
     cursor.execute("DROP TABLE IF EXISTS roles")
@@ -13,16 +13,21 @@ with sqlite3.connect("database.db", check_same_thread=False) as connection:
     cursor.execute("DROP TABLE IF EXISTS models")
     # cursor.execute("DROP TABLE IF EXISTS generations")
     cursor.execute("DROP TABLE IF EXISTS devices")
+    cursor.execute("DROP TABLE IF EXISTS device_type")
     # cursor.execute("DROP TABLE IF EXISTS audit")
 
+    # FOREIGN KEYS ON
+    cursor.execute("PRAGMA foreign_keys = ON;")
+
     # CREATE
-    cursor.execute("CREATE TABLE IF NOT EXISTS users (username TEXT, password TEXT)")
-    cursor.execute("CREATE TABLE IF NOT EXISTS roles (username TEXT, role TEXT)")
+    cursor.execute("CREATE TABLE IF NOT EXISTS users (username TEXT PRIMARY KEY, password TEXT)")
+    cursor.execute("CREATE TABLE IF NOT EXISTS roles (username TEXT REFERENCES users(username), role TEXT)")
     cursor.execute("CREATE TABLE IF NOT EXISTS languages (label TEXT)")
     cursor.execute("CREATE TABLE IF NOT EXISTS platforms (label TEXT)")
     cursor.execute("CREATE TABLE IF NOT EXISTS models (label TEXT)")
-    cursor.execute("CREATE TABLE IF NOT EXISTS generations (prompt TEXT, code TEXT)")
-    cursor.execute("CREATE TABLE IF NOT EXISTS devices (label TEXT, address TEXT)")
+    cursor.execute("CREATE TABLE IF NOT EXISTS generations (task TEXT, code TEXT)")
+    cursor.execute("CREATE TABLE IF NOT EXISTS device_type (label TEXT PRIMARY KEY)")
+    cursor.execute("CREATE TABLE IF NOT EXISTS devices (label TEXT PRIMARY KEY, address TEXT, type TEXT REFERENCES device_type(label))")
     cursor.execute("CREATE TABLE IF NOT EXISTS audit (date DATETIME, username TEXT, record TEXT)")
 
     # INSERT USERS
@@ -55,21 +60,28 @@ with sqlite3.connect("database.db", check_same_thread=False) as connection:
     cursor.execute("INSERT INTO platforms (label) VALUES (?)", ("avr",))
     cursor.execute("INSERT INTO platforms (label) VALUES (?)", ("esp32",))
     cursor.execute("INSERT INTO platforms (label) VALUES (?)", ("nodemcu",))
+    cursor.execute("INSERT INTO platforms (label) VALUES (?)", ("arduino",))
 
     # INSERT MODELS
     cursor.execute("INSERT INTO models (label) VALUES (?)", ("llama3",))
     cursor.execute("INSERT INTO models (label) VALUES (?)", ("llama3.2",))
     cursor.execute("INSERT INTO models (label) VALUES (?)", ("qwen3.5",))
 
+
+    # INSERT DEVICE TYPES
+    cursor.execute("INSERT INTO device_type (label) VALUES (?)", ("NodeMCU",))
+    cursor.execute("INSERT INTO device_type (label) VALUES (?)", ("Arduino",))
+    cursor.execute("INSERT INTO device_type (label) VALUES (?)", ("ESP32",))
+
     # INSERT DEVICES
-    cursor.execute("INSERT INTO devices (label, address) VALUES (?, ?)", ("Termosensor1 (1st floor)","10.0.0.153"))
-    cursor.execute("INSERT INTO devices (label, address) VALUES (?, ?)", ("Termosensor2 (1st floor)","10.0.0.154"))
-    cursor.execute("INSERT INTO devices (label, address) VALUES (?, ?)", ("Termosensor3 (1st floor)","10.0.0.155"))
-    cursor.execute("INSERT INTO devices (label, address) VALUES (?, ?)", ("Termosensor4 (3st floor)","10.0.0.156"))
-    cursor.execute("INSERT INTO devices (label, address) VALUES (?, ?)", ("Termosensor5 (3st floor)","10.0.0.157"))
-    cursor.execute("INSERT INTO devices (label, address) VALUES (?, ?)", ("Termosensor6 (4st floor)","10.0.0.158"))
-    cursor.execute("INSERT INTO devices (label, address) VALUES (?, ?)", ("Termosensor7 (5st floor)","10.0.0.159"))
-    cursor.execute("INSERT INTO devices (label, address) VALUES (?, ?)", ("Termosensor8 (7st floor)","10.0.0.160"))
+    cursor.execute("INSERT INTO devices (label, address, type) VALUES (?, ?, ?)", ("Termosensor1 (1st floor)","10.0.0.153", "NodeMCU"))
+    cursor.execute("INSERT INTO devices (label, address, type) VALUES (?, ?, ?)", ("Termosensor2 (1st floor)","10.0.0.154", "NodeMCU"))
+    cursor.execute("INSERT INTO devices (label, address, type) VALUES (?, ?, ?)", ("Termosensor3 (1st floor)","10.0.0.155", "NodeMCU"))
+    cursor.execute("INSERT INTO devices (label, address, type) VALUES (?, ?, ?)", ("Termosensor4 (3st floor)","10.0.0.156", "NodeMCU"))
+    cursor.execute("INSERT INTO devices (label, address, type) VALUES (?, ?, ?)", ("Termosensor5 (3st floor)","10.0.0.157", "NodeMCU"))
+    cursor.execute("INSERT INTO devices (label, address, type) VALUES (?, ?, ?)", ("Termosensor6 (4st floor)","10.0.0.158", "Arduino"))
+    cursor.execute("INSERT INTO devices (label, address, type) VALUES (?, ?, ?)", ("Termosensor7 (5st floor)","10.0.0.159", "Arduino"))
+    cursor.execute("INSERT INTO devices (label, address, type) VALUES (?, ?, ?)", ("Termosensor8 (7st floor)","10.0.0.160", "ESP32"))
 
     cursor.execute("SELECT * FROM users")
     rows = cursor.fetchall()

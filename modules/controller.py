@@ -1,18 +1,14 @@
-
-from langchain_ollama import ChatOllama
-from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.output_parsers import StrOutputParser
 from fastapi.responses import HTMLResponse
 
 from fastapi import FastAPI, Response, Cookie, Request, Form
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
-from typing import Annotated
-import html
+from typing import Annotated, List
 
 from modules.auth import Auth
-from modules.database import Audit, Admin
-import config
+from modules.database import Audit, Info
+from modules.llm import Llm
+from modules.deploy import DeployToDevice
 
 # Создаем контроллер API
 controller = FastAPI()
@@ -22,8 +18,7 @@ templates = Jinja2Templates(directory="templates")
 # Авторизация
 auth = Auth()
 
-# Настраиваем LLM-модель Ollama
-llm = ChatOllama(model=config.LLM_MODEL, temperature=0, base_url=config.LLM_BASE_URL)
+
 
 @controller.post("/auth")
 def auth_api(request: Request, response: Response, username: Annotated[str, Form()], password: Annotated[str, Form()]):
@@ -66,14 +61,14 @@ def admin_console(request: Request) -> HTMLResponse:
     if request.cookies.get("session_id"):
         isAuth, role, username = auth.checkAuth(request.cookies.get("session_id"))
         if isAuth and role == "admin":
-            admin = Admin()
+            info = Info()
             
-            users = admin.get_records("users", "username")
-            roles = admin.get_records("roles", "username, role")
-            languages = admin.get_records("languages", "label")
-            platforms = admin.get_records("platforms", "label")
-            models = admin.get_records("models", "label")
-            devices = admin.get_records("devices", "label,address")
+            users = info.get_records("users", "username")
+            roles = info.get_records("roles", "username, role")
+            languages = info.get_records("languages", "label")
+            platforms = info.get_records("platforms", "label")
+            models = info.get_records("models", "label")
+            devices = info.get_records("devices", "label,address")
 
             return templates.TemplateResponse("admin.html", {"request":         request, 
                                                                 "name":         username,
@@ -85,19 +80,19 @@ def admin_console(request: Request) -> HTMLResponse:
                                                                 "devices":      devices})
     return {"message": "Вы не авторизованы!"}
 
-# Консоль администратора
+# Дашборд
 @controller.get("/dashboard")
 def dashboard(request: Request) -> HTMLResponse:
     if request.cookies.get("session_id"):
         isAuth, role, username = auth.checkAuth(request.cookies.get("session_id"))
-        if isAuth and role == "viewer":
-            admin = Admin()
+        if isAuth and role in ["viewer", "user", "admin"]:
+            info = Info()
             
-            languages = admin.get_records("languages", "label")
-            platforms = admin.get_records("platforms", "label")
-            models = admin.get_records("models", "label")
-            devices = admin.get_records("devices", "label,address")
-            generations = admin.get_records("generations", "prompt,code")
+            languages = info.get_records("languages", "label")
+            platforms = info.get_records("platforms", "label")
+            models = info.get_records("models", "label")
+            devices = info.get_records("devices", "label,address,type")
+            generations = info.get_records("generations", "task,code")
 
             return templates.TemplateResponse("dashboard.html", {"request":         request, 
                                                                 "name":         username,
@@ -114,9 +109,56 @@ def emb_code_gen_form(request: Request) -> HTMLResponse:
     if request.cookies.get("session_id"):
         isAuth, role, username = auth.checkAuth(request.cookies.get("session_id"))
         if isAuth and role == "user":
+            info = Info()
+
+            languages = info.get_records("languages", "label")
+            platforms = info.get_records("platforms", "label")
+            models = info.get_records("models", "label")
+
             return templates.TemplateResponse("generator.html", {"request":     request, 
-                                                                "name":         username})
+                                                                "name":         username,
+                                                                "languages":    languages,
+                                                                "platforms":    platforms,
+                                                                "models":       models})
     return {"message": "Вы не авторизованы!"}
+
+# Развертывание (страница)
+@controller.get("/deploy")
+def deploy_form(request: Request) -> HTMLResponse:
+    if request.cookies.get("session_id"):
+        isAuth, role, username = auth.checkAuth(request.cookies.get("session_id"))
+        if isAuth and role == "user":
+            info = Info()
+            
+            devices = info.get_records("devices", "label,address,type")
+            device_types = info.get_records("device_type", "label")
+            generations = info.get_records("generations", "task,code")
+
+            return templates.TemplateResponse("deploy.html", {"request":             request, 
+                                                                "name":                 username,
+                                                                "devices":              devices,
+                                                                "device_types":         device_types,
+                                                                "generations":          generations})
+    return {"message": "Вы не авторизованы!"}
+
+# Развертывание (api)
+@controller.post("/deploy")
+def deploy_api(
+    request: Request,
+    devices: List[str] = Form(...),      # Получаем список выбранных устройств
+    generation: str = Form(...)          # Получаем выбранную генерацию (код)
+):
+    # try:
+    deploy = DeployToDevice()
+    print(f"Получен запрос на установку!")
+    print(f"Выбранные устройства: {devices}")
+    print(f"Код генерации: {generation}")
+
+    deploy.deploy(devices=devices, generation=generation)
+
+    # except:
+    #     return {"message": "Ошибка установки!"}  
+    return {"message": "Установка кода '" + str(generation) + "' на устройства '" + str(devices) + "' успешно выполнена!"} 
 
 @controller.get("/audit")
 def audit_form(request: Request) -> HTMLResponse:
@@ -133,40 +175,18 @@ def audit_form(request: Request) -> HTMLResponse:
 
 # Обработчик GET-запросов, апи генератора
 @controller.get("/emb_code_gen", response_class=HTMLResponse)
-async def generate_code(request: Request, language: str, platform: str, task: str) -> HTMLResponse:
+async def generate_code(request: Request, language: str, platform: str, task: str, model: str) -> HTMLResponse:
     if request.cookies.get("session_id"):
         isAuth, role, username = auth.checkAuth(request.cookies.get("session_id"))
         if isAuth and role == "user":
-            # Формируем шаблон промта для модели
-            prompt = ChatPromptTemplate.from_messages([
-                ("system", "Ты - разработчик встаиваемых модулей на языке {language}.Платформа {platform}."),
-                ("user", "Напиши код по задаче:{task}.В ответе только код, без комментариев.")
-            ])
-            
+            llm = Llm()
             audit = Audit()
             audit.add_record(username=username, record="Generation: " + language + " " + platform + " " + task)
-
-            # Создаем цепочку обработчиков
-            chain = prompt | llm | StrOutputParser()
             
-            # Получаем ответ от модели
-            response = chain.invoke({"language":language, 
-                                    "platform":platform,
-                                    "task":task})
+            html_content = llm.generate_code(language=language,
+                                             platform=platform,
+                                             task=task,
+                                             model=model)
             
-
-            # Безопасно экранируем спецсимволы HTML и форматируем код
-            escaped_response = html.escape(response)
-            formatted_code = escaped_response.replace('\n', '<br>').replace('  ', '&nbsp;&nbsp;')
-            
-            # Формируем полноценный HTML-документ с базовым стилем
-            html_content = f"""
-            <!DOCTYPE html>
-            <html lang="ru">
-            <body>
-                {formatted_code}
-            </body>
-            </html>
-            """
-            
-            return HTMLResponse(content=html_content, status_code=200)
+            return HTMLResponse(content=html_content, 
+                                status_code=200)

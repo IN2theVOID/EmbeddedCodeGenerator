@@ -39,6 +39,10 @@
             gap: 20px; /* Отступы между блоками */
         }
 
+        .block ul li {
+            white-space: pre-line;
+        }
+
         .block {
             /* Блок занимает 1/3 ширины минус отступы */
             flex: 1 1 calc(33.333% - 20px); 
@@ -88,6 +92,8 @@
         <div class="user-info">
             <strong>Текущий пользователь:</strong> {{ name }}
         </div>
+        <br>
+        <a href = "/code_generator">Генератор кода</a>
 
         <div class="blocks-grid">
         
@@ -152,19 +158,20 @@
           </section>
 
           <!-- Блок Список генераций -->
-          <section class="block">
-              <h3>Список генераций</h3>
-              
-              {% if generations %}
-                  <ul>
-                      {% for generation in generations %}
-                          <li>{{ generation }}</li>
-                      {% endfor %}
-                  </ul>
-              {% else %}
-                  <p class="empty-state">Генерации отсутствуют.</p>
-              {% endif %}
-          </section>
+            <section class="block">
+                <h3>Список генераций</h3>
+                
+                {% if generations %}
+                    <ul>
+                        {% for generation in generations %}
+                            <li><b>Задача:</b> {{ generation[0] }}<br>
+                                   <b>Код:</b> {{ generation[1] }}</li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="empty-state">Генерации отсутствуют.</p>
+                {% endif %}
+            </section>
 
       </div> <!-- Конец blocks-grid -->
 
