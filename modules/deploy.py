@@ -24,6 +24,6 @@ class DeployToDevice(Deploy):
 
             script = "deploy_scripts/" + type + ".sh"
 
-            subprocess.run([script, "code.txt"])
+            subprocess.run([script, "code.txt", ip])
 
         return True
