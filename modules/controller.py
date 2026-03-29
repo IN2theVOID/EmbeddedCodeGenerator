@@ -20,8 +20,6 @@ templates = Jinja2Templates(directory="templates")
 # Авторизация
 auth = Auth()
 
-
-
 @controller.post("/auth")
 def auth_api(request: Request, response: Response, username: Annotated[str, Form()], password: Annotated[str, Form()]):
     '''
@@ -80,6 +78,17 @@ def admin_console(request: Request) -> HTMLResponse:
                                                                 "platforms":    platforms,
                                                                 "models":       models,
                                                                 "devices":      devices})
+    return {"message": "Вы не авторизованы!"}
+
+# Консоль администратора
+@controller.post("/create_user")
+def admin_console(request: Request, createusername: Annotated[str, Form()], password: Annotated[str, Form()], role: Annotated[str, Form()]):
+    if request.cookies.get("session_id"):
+        isAuth, role, username = auth.checkAuth(request.cookies.get("session_id"))
+        if isAuth and role == "admin":
+            # todo
+            return {"message": "Пользователь " + createusername + " успешно создан"}
+            
     return {"message": "Вы не авторизованы!"}
 
 # Дашборд
@@ -151,17 +160,21 @@ def deploy_api(
     generation: str = Form(...)          # Получаем выбранную генерацию (код)
 ):
     # try:
-    deploy = DeployToDevice()
-    print(f"Получен запрос на установку!")
-    print(f"Выбранные устройства: {devices}")
-    print(f"Код генерации: {generation}")
+    if request.cookies.get("session_id"):
+        isAuth, role, username = auth.checkAuth(request.cookies.get("session_id"))
+        if isAuth and role == "user":
+            deploy = DeployToDevice()
+            print(f"Получен запрос на установку!")
+            print(f"Выбранные устройства: {devices}")
+            print(f"Код генерации: {generation}")
 
-    response = deploy.deploy(devices=devices, generation=generation)
+            response = deploy.deploy(devices=devices, generation=generation)
 
-    # except:
-    #     return {"message": "Ошибка установки!"}  
-    # return {"message": "Установка кода '" + str(generation) + "' на устройства '" + str(devices) + "' успешно выполнена!"} 
-    return {"message": response}
+            # except:
+            #     return {"message": "Ошибка установки!"}  
+            # return {"message": "Установка кода '" + str(generation) + "' на устройства '" + str(devices) + "' успешно выполнена!"} 
+            return {"message": response}
+    return {"message": "Вы не авторизованы!"}
 
 @controller.get("/audit")
 def audit_form(request: Request) -> HTMLResponse:

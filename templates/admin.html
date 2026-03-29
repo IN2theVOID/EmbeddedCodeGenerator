@@ -2,161 +2,277 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Панель администратора</title>
     <style>
+        /* --- Сброс и базовые стили --- */
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: #f4f7f9;
-            color: #333;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #f8f9fa;
+            color: #212529;
             margin: 0;
             padding: 20px;
             line-height: 1.6;
         }
+
         .container {
             max-width: 1200px;
             margin: 0 auto;
-            background: #fff;
-            padding: 25px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
         }
-        h2 {
-            color: #2c3e50;
-            border-bottom: 2px solid #e0e0e0;
-            padding-bottom: 10px;
+
+        /* --- Шапка и Пользователь --- */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            color: #343a40;
+            font-size: 2rem;
         }
         .user-info {
-            background-color: #e8f5e9;
-            color: #2e7d32;
-            padding: 10px 15px;
-            border-radius: 5px;
-            margin-bottom: 25px;
+            background-color: #d4edda; /* Светло-зеленый */
+            color: #155724; /* Темно-зеленый */
+            padding: 12px 18px;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
         }
-        .block {
-            margin-bottom: 30px;
-            padding-bottom: 25px;
-            border-bottom: 1px solid #eaeaea;
+        .user-info strong {
+            margin-right: 10px;
         }
-        .block:last-child {
-            border-bottom: none;
+
+        /* --- Карточки блоков --- */
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
         }
-        .block h3 {
-            color: #34495e;
+
+        .card {
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-header {
+            background-color: #0d6efd; /* Основной синий */
+            color: white;
+            padding: 18px;
+        }
+        .card-header h3 {
             margin-top: 0;
+            font-size: 1.25rem;
         }
-        .block p {
-            margin: 5px 0 15px;
+
+        .card-body {
+            padding: 20px;
         }
-        ul {
-            list-style-type: disc;
-            padding-left: 25px;
+
+        .list-group {
+            list-style: none;
+            padding: 0;
+            margin: 0;
         }
-        li {
+        .list-group-item {
+            padding: 12px 16px;
             margin-bottom: 8px;
+            background-color: #f1f3f5; /* Светло-серый фон для пунктов */
+            border-radius: 6px;
+             cursor: pointer; /* Показываем, что можно кликнуть */
+             transition: background-color 0.2s;
+             display: flex;
+             justify-content: space-between;
+             align-items: center;
+             font-size: 0.97rem;
         }
-        .empty-state {
-            color: #999;
-            font-style: italic;
-        }
+        .list-group-item:hover {
+             background-color: #e9ecef; /* Темнее при наведении */
+         }
+         .list-group-item.empty-state {
+             background-color: transparent;
+             color: #adb5bd; /* Серый для пустого состояния */
+             text-align: center;
+             padding-top: 40px;
+             padding-bottom: 40px;
+         }
+         .list-group-item .actions button {
+             background: none;
+             border: none;
+             color: #dc3545; /* Красный для удаления */
+             cursor: pointer;
+             font-size: 1.1rem;
+             margin-left: 10px;
+         }
+         .list-group-item .actions button:hover {
+             color: #c82333; /* Темно-красный при наведении */
+         }
+
+         /* --- Форма создания пользователя --- */
+         .form-card {
+             grid-column: span 2; /* Занимает две колонки на больших экранах */
+         }
+         .form-group {
+             margin-bottom: 18px;
+         }
+         .form-group label {
+             display: block;
+             margin-bottom: 6px;
+             font-weight: bold;
+         }
+         .form-group input {
+             width: calc(100% - 22px);
+             padding: 10px 12px;
+             border-radius: 6px;
+             border: 1px solid #ced4da;
+             font-size: inherit;
+         }
+         .form-group input:focus {
+             outline: none;
+             border-color: #80bdff; /* Синий фокус */
+             box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+         }
+         
+         .btn-primary {
+             background-color: #0d6efd; /* Синий */
+             border-color: #0d6efd;
+             color: white !important; /* !important чтобы перебить цвет текста */
+             padding: 10px 20px;
+             border-radius: 6px;
+             cursor: pointer;
+             font-weight: bold;
+         }
+         .btn-secondary {
+             background-color: #6c757d; /* Серый */
+             border-color: #6c757d;
+             color: white !important;
+         }
+         
+         @media (max-width: 768px) {
+           .form-card { grid-column: span 1; } /* На узких экранах форма занимает всю ширину */
+           .btn-secondary { margin-top: -10px; margin-left: auto; display: block; } /* Кнопка сброса под основной */
+         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h2>Панель администратора</h2>
+        <div class="header">
+           <h1>Панель администратора</h1>
+           <div class="user-info">
+               <strong>Текущий пользователь:</strong> {{ name }}
+           </div>
+       </div>
 
-        <!-- Блок информации о пользователе -->
-        <div class="user-info">
-            <strong>Текущий пользователь:</strong> {{ name }}
-        </div>
+       <div class="grid-container">
 
-        <!-- Блок Список пользователей -->
-        <section class="block">
-            <h3>Список пользователей</h3>
-            
-            {% if users %}
-                <ul>
-                    {% for user in users %}
-                        <li>{{ user }}</li>
-                    {% endfor %}
-                </ul>
-            {% else %}
-                <p class="empty-state">Пользователи отсутствуют.</p>
-            {% endif %}
-        </section>
+           <!-- Блок формы создания пользователя -->
+           <div class="card form-card">
+               <div class="card-header">
+                   <h3>Создать нового пользователя</h3>
+               </div>
+               <div class="card-body">
+                   <form action="/create_user" method="post">
+                       <div class="form-group">
+                           <label for="createusername">Имя пользователя:</label>
+                           <input type="text" id="createusername" name="createusername" placeholder="Введите логин" required>
+                       </div>
+                       <div class="form-group">
+                           <label for="password">Пароль:</label>
+                           <input type="password" id="password" name="password" placeholder="••••••••" required>
+                       </div>
+                       <div class="form-group">
+                           <label for="role">Роль:</label>
+                           <input type="role" id="role" name="role" placeholder="user" required>
+                       </div>
+                       <button type="submit" class="btn-primary">Создать</button>
+                       <button type="reset" class="btn-secondary">Сбросить</button>
+                   </form>
+               </div>
+           </div>
 
-        <!-- Блок Список ролей -->
-        <section class="block">
-            <h3>Список ролей</h3>
-            
-            {% if roles %}
-                <ul>
-                    {% for role in roles %}
-                        <li>{{ role }}</li>
-                    {% endfor %}
-                </ul>
-            {% else %}
-                <p class="empty-state">Роли отсутствуют.</p>
-            {% endif %}
-        </section>
+           <!-- Блок Список пользователей -->
+           <div class="card">
+               <div class="card-header">
+                   <h3>Список пользователей</h3>
+               </div>
+               <div class="card-body">
+                   <ul class="list-group">
+                       {% if users %}
+                           {% for user in users %}
+                               <li class="list-group-item">{{ user }}
+                                   <span class="actions">
+                                       <!-- Здесь можно добавить иконки для действий -->
+                                       <button title="Редактировать">✎</button>
+                                       <button title="Удалить">✖</button>
+                                   </span>
+                               </li>
+                           {% endfor %}
+                       {% else %}
+                           <li class="list-group-item empty-state">Пользователи отсутствуют.</li>
+                       {% endif %}
+                   </ul>
+               </div>
+           </div>
 
-        <!-- Остальные блоки (Языки, Платформы и т.д.) -->
-        
-        <section class="block">
-            <h3>Список языков</h3>
-            
-            {% if languages %}
-                <ul>
-                    {% for language in languages %}
-                        <li>{{ language }}</li>
-                    {% endfor %}
-                </ul>
-            {% else %}
-                <p class="empty-state">Языки отсутствуют.</p>
-            {% endif %}
-        </section>
+           <!-- Блок Список ролей -->
+           <div class="card">
+               <div class="card-header">
+                   <h3>Список ролей</h3>
+               </div>
+               <div class="card-body">
+                   <ul class="list-group">
+                       {% if roles %}
+                           {% for role in roles %}
+                               <li class="list-group-item">{{ role }}
+                                   <span class="actions">
+                                       <button title="Редактировать">✎</button>
+                                       <button title="Удалить">✖</button>
+                                   </span>
+                               </li>
+                           {% endfor %}
+                       {% else %}
+                           <li class="list-group-item empty-state">Роли отсутствуют.</li>
+                       {% endif %}
+                   </ul>
+               </div>
+           </div>
 
-        <section class="block">
-            <h3>Список платформ</h3>
-            
-            {% if platforms %}
-                <ul>
-                    {% for platform in platforms %}
-                        <li>{{ platform }}</li>
-                    {% endfor %}
-                </ul>
-             {% else %}
-                <p class="empty-state">Платформы отсутствуют.</p>
-             {% endif %}
-         </section>
+           <!-- Остальные блоки (Языки, Платформы и т.д.) -->
+           {% for block in ['languages', 'platforms', 'models', 'devices'] %}
+               {% if block in context and context[block] is not none %}
+                   <div class="card">
+                       <div class="card-header">
+                           <h3>Список {{ block|title }}</h3>
+                       </div>
+                       <div class="card-body">
+                           <ul class="list-group">
+                               {% if context[block]|length > 0 %}
+                                   {% for item in context[block] %}
+                                       <li class="list-group-item">{{ item }}
+                                           <span class="actions">
+                                               <button title="Редактировать">✎</button>
+                                               <button title="Удалить">✖</button>
+                                           </span>
+                                       </li>
+                                   {% endfor %}
+                               {% else %}
+                                   <li class="list-group-item empty-state">{{ block|title }} отсутствуют.</li>
+                               {% endif %}
+                           </ul>
+                       </div>
+                   </div>
+               {% endif %}
+           {% endfor %}
 
-         <section class="block">
-             <h3>Список моделей</h3>
-             
-             {% if models %}
-                 <ul>
-                     {% for model in models %}
-                         <li>{{ model }}</li>
-                     {% endfor %}
-                 </ul>
-             {% else %}
-                 <p class="empty-state">Модели отсутствуют.</p>
-             {% endif %}
-         </section>
-
-         <section class="block">
-             <h3>Список устройств</h3>
-             
-             {% if devices %}
-                 <ul>
-                     {% for device in devices %}
-                         <li>{{ device }}</li>
-                     {% endfor %}
-                 </ul>
-             {% else %}
-                 <p class="empty-state">Устройства отсутствуют.</p>
-             {% endif %}
-         </section>
-
+       </div>
     </div>
 </body>
 </html>
