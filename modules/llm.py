@@ -5,6 +5,7 @@ import html
 
 import config
 from modules.database import Generations
+from modules.exceptions import ModelError
 
 class Llm:
     def generate_code(self, language: str, platform: str, task: str, model: str) -> str:
@@ -21,10 +22,13 @@ class Llm:
         # Создаем цепочку обработчиков
         chain = prompt | llm | StrOutputParser()
         
-        # Получаем ответ от модели
-        response = chain.invoke({"language":language, 
-                                "platform":platform,
-                                "task":task})
+        try:
+            # Получаем ответ от модели
+            response = chain.invoke({"language":language, 
+                                    "platform":platform,
+                                    "task":task})
+        except:
+            raise ModelError
         
         # Безопасно экранируем спецсимволы HTML и форматируем код
         escaped_response = html.escape(response)
