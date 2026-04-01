@@ -22,6 +22,9 @@ templates = Jinja2Templates(directory="templates")
 # Генератор (страница)
 @generator_router.get("/code_generator")
 def emb_code_gen_form(request: Request) -> HTMLResponse:
+    '''
+    Генератор (страница)
+    '''
     if request.cookies.get("session_id"):
         isAuth, role, username = auth.checkAuth(request.cookies.get("session_id"))
         if isAuth and role == "user":
@@ -42,6 +45,9 @@ def emb_code_gen_form(request: Request) -> HTMLResponse:
 # Развертывание (страница)
 @generator_router.get("/deploy")
 def deploy_form(request: Request) -> HTMLResponse:
+    '''
+    Развертывание (страница)
+    '''
     if request.cookies.get("session_id"):
         isAuth, role, username = auth.checkAuth(request.cookies.get("session_id"))
         if isAuth and role == "user":
@@ -65,6 +71,9 @@ def deploy_api(
     devices: List[str] = Form(...),      # Получаем список выбранных устройств
     generation: str = Form(...)          # Получаем выбранную генерацию (код)
 ):
+    '''
+    Развертывание (api)
+    '''
     # try:
     if request.cookies.get("session_id"):
         isAuth, role, username = auth.checkAuth(request.cookies.get("session_id"))
@@ -84,6 +93,9 @@ def deploy_api(
 # Обработчик GET-запросов, апи генератора
 @generator_router.get("/emb_code_gen", response_class=HTMLResponse)
 async def generate_code(request: Request, language: str, platform: str, task: str, model: str) -> HTMLResponse:
+    '''
+    Обработчик GET-запросов, апи генератора
+    '''
     if request.cookies.get("session_id"):
         isAuth, role, username = auth.checkAuth(request.cookies.get("session_id"))
         if isAuth and role == "user":

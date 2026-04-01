@@ -15,12 +15,15 @@ templates = Jinja2Templates(directory="templates")
 # Авторизация
 @auth_router.get("/")
 def auth_page(request: Request) -> HTMLResponse:
+    '''
+    Форма авторизации
+    '''
     return templates.TemplateResponse("auth.html", {"request": request})
 
 @auth_router.post("/auth")
 def auth_api(request: Request, response: Response, username: Annotated[str, Form()], password: Annotated[str, Form()]):
     '''
-    Авторизация
+    API Авторизации
     В случае успеха выдается session_id
     '''
 

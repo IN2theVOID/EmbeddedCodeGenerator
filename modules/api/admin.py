@@ -17,6 +17,9 @@ templates = Jinja2Templates(directory="templates")
 # Консоль администратора
 @admin_router.get("/admin_console")
 def admin_console(request: Request) -> HTMLResponse:
+    '''
+    Страница Консоль администратора
+    '''
     if request.cookies.get("session_id"):
         isAuth, role, username = auth.checkAuth(request.cookies.get("session_id"))
         if isAuth and role == "admin":
@@ -41,7 +44,10 @@ def admin_console(request: Request) -> HTMLResponse:
 
 # Создание пользователя
 @admin_router.post("/create_user")
-def admin_console(request: Request, createusername: Annotated[str, Form()], password: Annotated[str, Form()], role: Annotated[str, Form()]):
+def create_user(request: Request, createusername: Annotated[str, Form()], password: Annotated[str, Form()], role: Annotated[str, Form()]):
+    '''
+    Создание нового пользователя
+    '''
     if request.cookies.get("session_id"):
         isAuth, role, username = auth.checkAuth(request.cookies.get("session_id"))
         if isAuth and role == "admin":

@@ -17,6 +17,9 @@ templates = Jinja2Templates(directory="templates")
 
 @audit_router.get("/audit")
 def audit_form(request: Request) -> HTMLResponse:
+    '''
+    Страница Аудит
+    '''
     if request.cookies.get("session_id"):
         isAuth, role, username = auth.checkAuth(request.cookies.get("session_id"))
         if isAuth and role == "auditor":

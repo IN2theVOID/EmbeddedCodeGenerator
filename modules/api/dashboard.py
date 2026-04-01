@@ -20,6 +20,9 @@ templates = Jinja2Templates(directory="templates")
 # Дашборд
 @dashboard_router.get("/dashboard")
 def dashboard(request: Request) -> HTMLResponse:
+    '''
+    Обзор системы
+    '''
     if request.cookies.get("session_id"):
         isAuth, role, username = auth.checkAuth(request.cookies.get("session_id"))
         if isAuth and role in ["viewer", "user", "admin"]:
