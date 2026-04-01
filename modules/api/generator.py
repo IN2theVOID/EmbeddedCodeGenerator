@@ -4,6 +4,7 @@ from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from typing import List
 from starlette.templating import _TemplateResponse
+from prometheus_client import Counter
 
 from modules.auth import Auth
 from modules.database import Audit, Info
@@ -18,6 +19,9 @@ auth = Auth()
 
 templates = Jinja2Templates(directory="templates")
 
+# Prometheus метрики
+prometheus_generate_metric = Counter("generations", "Code generations count")
+prometheus_deploy_metric = Counter("deployments", "Code deployments count")
 
 # Генератор (страница)
 @generator_router.get("/code_generator")
@@ -84,6 +88,7 @@ def deploy_api(
             print(f"Код генерации: {generation}")
             try:
                 response = deploy.deploy(devices=devices, generation=generation)
+                prometheus_deploy_metric.inc()
             except DeployError:
                 return templateInfoMessage(f"Ошибка разворачивания на {devices}!", request)
             
@@ -108,6 +113,7 @@ async def generate_code(request: Request, language: str, platform: str, task: st
                                                 platform=platform,
                                                 task=task,
                                                 model=model)
+                prometheus_generate_metric.inc()
             except ModelError:
                 return templateInfoMessage("Ошибка модели!", request)
 
