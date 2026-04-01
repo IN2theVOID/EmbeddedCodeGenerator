@@ -78,7 +78,6 @@ def deploy_api(
     '''
     Развертывание (api)
     '''
-    # try:
     if request.cookies.get("session_id"):
         isAuth, role, username = auth.checkAuth(request.cookies.get("session_id"))
         if isAuth and role == "user":
