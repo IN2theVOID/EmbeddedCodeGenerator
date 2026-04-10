@@ -9,7 +9,7 @@ from modules.database import Info
 
 admin_router = APIRouter()
 
-# Авторизация
+# Аутентификация
 auth = Auth()
 
 templates = Jinja2Templates(directory="templates")

@@ -7,12 +7,12 @@ from modules.auth import Auth
 
 auth_router = APIRouter()
 
-# Авторизация
+# Аутентификация
 auth = Auth()
 
 templates = Jinja2Templates(directory="templates")
 
-# Авторизация
+# Аутентификация
 @auth_router.get("/")
 def auth_page(request: Request) -> HTMLResponse:
     '''
@@ -47,4 +47,4 @@ def auth_api(request: Request, response: Response, username: Annotated[str, Form
         response.set_cookie(key="session_id", value=authResponse.cookieString)
         return response
     else:
-        return {"message": "Авторизация неуспешна"}
+        return {"message": "Аутентификация неуспешна"}

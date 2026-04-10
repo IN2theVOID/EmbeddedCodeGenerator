@@ -10,7 +10,7 @@ from modules.database import Audit
 
 audit_router = APIRouter()
 
-# Авторизация
+# Аутентификация
 auth = Auth()
 
 templates = Jinja2Templates(directory="templates")
