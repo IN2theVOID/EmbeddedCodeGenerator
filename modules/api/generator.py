@@ -82,6 +82,8 @@ def deploy_api(
         isAuth, role, username = auth.checkAuth(request.cookies.get("session_id"))
         if isAuth and role == "user":
             deploy = DeployToDevice()
+            audit = Audit()
+            audit.add_record(username=username, record="Deploy: " + str(devices) + " " + generation[:15])
             print(f"Получен запрос на установку!")
             print(f"Выбранные устройства: {devices}")
             print(f"Код генерации: {generation}")
