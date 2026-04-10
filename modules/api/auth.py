@@ -30,7 +30,7 @@ def auth_api(request: Request, response: Response, username: Annotated[str, Form
     if request.cookies.get("session_id"):
         isAuth, role, username = auth.checkAuth(request.cookies.get("session_id"))
         if isAuth:
-            return {"message": "Вы уже авторизованы", "role": role}
+            return templateInfoMessage(f"Вы уже авторизованы! Роль: {role}", request)
     
     authResponse = auth.authUser(username, password)
     if authResponse.isAuth:
@@ -47,4 +47,9 @@ def auth_api(request: Request, response: Response, username: Annotated[str, Form
         response.set_cookie(key="session_id", value=authResponse.cookieString)
         return response
     else:
-        return {"message": "Аутентификация неуспешна"}
+        return templateInfoMessage("Аутентификация неуспешна!", request)
+
+def templateInfoMessage(message: str, request: Request) -> _TemplateResponse:
+    return templates.TemplateResponse(
+                "message.html", {"request": request, 
+                                 "message": message})
