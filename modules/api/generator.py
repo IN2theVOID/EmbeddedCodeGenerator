@@ -1,3 +1,5 @@
+from turtle import mode
+
 from fastapi.responses import HTMLResponse
 from fastapi import  Request, Form, APIRouter
 from fastapi.responses import HTMLResponse
@@ -8,7 +10,7 @@ from prometheus_client import Counter
 
 from modules.auth import Auth
 from modules.database import Audit, Info
-from modules.llm import Llm
+from modules.llm import Llm, LLmFactory
 from modules.deploy import DeployToDevice
 from modules.exceptions import ModelError, DeployError
 
@@ -105,7 +107,7 @@ async def generate_code(request: Request, language: str, platform: str, task: st
     if request.cookies.get("session_id"):
         isAuth, role, username = auth.checkAuth(request.cookies.get("session_id"))
         if isAuth and role == "user":
-            llm = Llm()
+            llm = LLmFactory.getLlm(model=model)
             audit = Audit()
             audit.add_record(username=username, record="Generation: " + language + " " + platform + " " + task)
             

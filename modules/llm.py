@@ -7,28 +7,42 @@ import config
 from modules.database import Generations
 from modules.exceptions import ModelError
 
-class Llm:
-    def generate_code(self, language: str, platform: str, task: str, model: str) -> str:
-        # Настраиваем LLM-модель Ollama
-        llm = ChatOllama(model=model, temperature=0, base_url=config.LLM_BASE_URL)
-        generations = Generations()
+class LLmFactory():
+    @staticmethod
+    def getLlm(model) -> Llm:
+        return Llm(model=model)
 
+class Llm:
+    def __init__(self, model) -> None:
+        # Настраиваем LLM-модель Ollama
+        self.llm = ChatOllama(model=model, temperature=0, base_url=config.LLM_BASE_URL)
+        self.generations = Generations()
+
+
+    def generate_code(self, language: str, platform: str, task: str, model: str) -> str:
         # Формируем шаблон промта для модели
-        prompt = ChatPromptTemplate.from_messages([
+        generatePrompt = ChatPromptTemplate.from_messages([
             ("system", "Ты - разработчик встаиваемых модулей на языке {language}.Платформа {platform}."),
             ("user", "Напиши код по задаче:{task}.В ответе только код, без комментариев и эмодзи.")
         ])
+
+        checkPrompt = ChatPromptTemplate.from_messages([
+            ("system", "Ты - разработчик встаиваемых модулей на языке {language}.Платформа {platform}."),
+            ("user", "Выполни проверку представленного кода на корректность, исправь и проведи рефакторинг, если считаешь нужным. В ответе только код, без комментариев и цепочки рассуждений. Код: {code}")
+        ])
         
         # Создаем цепочку обработчиков
-        chain = prompt | llm | StrOutputParser()
-        
+        chain = generatePrompt | self.llm | StrOutputParser()
+        chainCheck = checkPrompt | self.llm | StrOutputParser()
+        fullChain = chain | (lambda output: {"code": output, "language": language, "platform": platform}) | chainCheck
+
         try:
             # Получаем ответ от модели
-            response = chain.invoke({"language":language, 
+            response = fullChain.invoke({"language":language, 
                                     "platform":platform,
                                     "task":task})
         except:
-            raise ModelError
+            raise ModelError()
         
         # Безопасно экранируем спецсимволы HTML и форматируем код
         escaped_response = html.escape(response)
@@ -44,7 +58,7 @@ class Llm:
         </html>
         """
 
-        generations.add_generation(task=task,
+        self.generations.add_generation(task=task,
                                    code=response)
 
         return html_content

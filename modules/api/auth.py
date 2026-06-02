@@ -2,6 +2,7 @@ from fastapi import APIRouter, Response, Cookie, Request, Form
 from typing import Annotated
 from fastapi.responses import RedirectResponse, HTMLResponse
 from fastapi.templating import Jinja2Templates
+from starlette.templating import _TemplateResponse
 
 from modules.auth import Auth
 
