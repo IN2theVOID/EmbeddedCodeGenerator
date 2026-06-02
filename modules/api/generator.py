@@ -1,5 +1,3 @@
-from turtle import mode
-
 from fastapi.responses import HTMLResponse
 from fastapi import  Request, Form, APIRouter
 from fastapi.responses import HTMLResponse
