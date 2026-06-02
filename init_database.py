@@ -1,6 +1,7 @@
 import sqlite3
 from modules.database import User, Role
 from modules.exceptions import NoRoleMappingToUser
+from modules.logger import log
 
 with sqlite3.connect("database.db", check_same_thread=False) as connection:
     cursor = connection.cursor()
@@ -86,24 +87,24 @@ with sqlite3.connect("database.db", check_same_thread=False) as connection:
     cursor.execute("SELECT * FROM users")
     rows = cursor.fetchall()
 
-    print("Created users:")
+    log.info("Created users:")
     for row in rows:
-        print(f"Name: {row[0]}, Password: {row[1]}")
+        log.info(f"Name: {row[0]}, Password: {row[1]}")
 
     cursor.execute("SELECT * FROM roles")
     rows = cursor.fetchall()
 
-    print("Created roles:")
+    log.info("Created roles:")
     for row in rows:
-        print(f"Name: {row[0]}, Role: {row[1]}")
+        log.info(f"Name: {row[0]}, Role: {row[1]}")
 
     connection.commit()
 
     user = User()
-    print(user.check_creds("user","user1"))
+    log.info(user.check_creds("user","user1"))
     role = Role()
 
     try:
-        print(role.get_role_by_user("auditor"))
+        log.info(role.get_role_by_user("auditor"))
     except NoRoleMappingToUser:
-        print("Пользователю не назначена роль")
+        log.info("Пользователю не назначена роль")

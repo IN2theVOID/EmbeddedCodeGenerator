@@ -4,6 +4,7 @@ from modules.database import Info
 import subprocess
 
 from modules.exceptions import DeployError
+from modules.logger import log
 
 class Deploy(ABC):
     def deploy(self, devices: List, generation: str):
@@ -16,13 +17,13 @@ class DeployToDevice(Deploy):
             deployment_results = []
             info = Info()
             code = info.getGenerationDataByTask(generation)[0][1]
-            print(code)
+            log.info(code)
             for device in devices:
-                print(info.getDeviceDataByLabel(device))
+                log.info(info.getDeviceDataByLabel(device))
                 label = info.getDeviceDataByLabel(device)[0][0]
                 ip = info.getDeviceDataByLabel(device)[0][1]
                 type = info.getDeviceDataByLabel(device)[0][2]
-                print("Start deploy to: " + label + " " + ip + " " + type)
+                log.info("Start deploy to: " + label + " " + ip + " " + type)
 
                 with open("code.txt", "w") as file:
                     file.write(code)

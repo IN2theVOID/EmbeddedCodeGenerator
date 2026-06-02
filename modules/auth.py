@@ -6,6 +6,7 @@ from urllib import response
 
 from modules.database import User, Role, Audit
 from modules.exceptions import NoRoleMappingToUser
+from modules.logger import log
 
 auth_tokens = []
 
@@ -40,26 +41,26 @@ class Auth:
     def authUser(self, username: str, password: str) -> AuthResponse:
         try:
             if self._user.check_creds(username, password):
-                print("AUTH SUCCESS")
+                log.info("AUTH SUCCESS")
                 self._audit.add_record(username=username, record="Auth user")
                 response = self._factory.getAuthResponce(isAuth=True, username=username)
             else:
-                print("AUTH FAILED")
+                log.info("AUTH FAILED")
                 self._audit.add_record(username=username, record="Auth failed")
                 response = self._factory.getAuthResponce(isAuth=False, username=username)
         except KeyError:
-            print("USER NOT IN LIST")
+            log.error("USER NOT IN LIST")
             self._audit.add_record(username=username, record="Auth failed")
             response = self._factory.getAuthResponce(isAuth=False, username=username)
         return response
     
     def checkAuth(self, token: str) -> tuple[Literal[True], str] | tuple[Literal[False], None]:
-        print(token)
+        log.info(token)
         role = None
         if token in auth_tokens:
             role = self.getRoleFromToken(token=token)
             username = self.getUsernameFromToken(token=token)
-            print(role)
+            log.info(role)
             return True, role, username
         else:
             username = self.getUsernameFromToken(token=token)

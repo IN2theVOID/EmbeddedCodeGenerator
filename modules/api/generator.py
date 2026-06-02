@@ -11,6 +11,7 @@ from modules.database import Audit, Info
 from modules.llm import Llm, LLmFactory
 from modules.deploy import DeployToDevice
 from modules.exceptions import ModelError, DeployError
+from modules.logger import log
 
 generator_router = APIRouter()
 
@@ -84,9 +85,9 @@ def deploy_api(
             deploy = DeployToDevice()
             audit = Audit()
             audit.add_record(username=username, record="Deploy: " + str(devices) + " " + generation[:15])
-            print(f"Получен запрос на установку!")
-            print(f"Выбранные устройства: {devices}")
-            print(f"Код генерации: {generation}")
+            log.info(f"Получен запрос на установку!")
+            log.info(f"Выбранные устройства: {devices}")
+            log.info(f"Код генерации: {generation}")
             try:
                 response = deploy.deploy(devices=devices, generation=generation)
                 prometheus_deploy_metric.inc()
