@@ -7,9 +7,8 @@ prometheus-fastapi-instrumentator==7.1.0
 prometheus-client==0.24.1
 langchain-chroma==1.1.0
 langchain-text-splitters==1.1.2
-langchain 
-langchain-community 
-langchain-core 
-langchain-chroma 
-sentence-transformers 
-huggingface_hub
+langchain==1.3.7
+langchain-community==0.4.2
+langchain-core==1.4.6
+sentence-transformers==5.5.1
+huggingface_hub==1.19.0
