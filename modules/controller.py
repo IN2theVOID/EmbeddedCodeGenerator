@@ -6,10 +6,10 @@ from modules.api.admin import admin_router
 from modules.api.dashboard import dashboard_router
 from modules.api.generator import generator_router
 from modules.api.audit import audit_router
-
+from modules.lifespan import lifespan
 
 # Создаем контроллер API
-controller = FastAPI()
+controller = FastAPI(lifespan=lifespan)
 
 # Наполянем роутерами
 controller.include_router(auth_router)

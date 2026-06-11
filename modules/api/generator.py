@@ -114,7 +114,7 @@ async def generate_code(request: Request, language: str, platform: str, task: st
                 html_content = llm.generate_code(language=language,
                                                 platform=platform,
                                                 task=task,
-                                                model=model)
+                                                retriever=request.state.retriever)
                 prometheus_generate_metric.inc()
             except ModelError:
                 return templateInfoMessage("Ошибка модели!", request)

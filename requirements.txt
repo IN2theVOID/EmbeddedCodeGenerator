@@ -5,3 +5,11 @@ python-multipart==0.0.22
 jinja2==3.1.6
 prometheus-fastapi-instrumentator==7.1.0
 prometheus-client==0.24.1
+langchain-chroma==1.1.0
+langchain-text-splitters==1.1.2
+langchain 
+langchain-community 
+langchain-core 
+langchain-chroma 
+sentence-transformers 
+huggingface_hub

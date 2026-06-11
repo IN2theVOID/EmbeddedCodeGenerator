@@ -6,6 +6,10 @@ import html
 import config
 from modules.database import Generations
 from modules.exceptions import ModelError
+from modules.logger import log
+
+def format_docs(docs):
+    return "\n\n".join(doc.page_content for doc in docs)
 
 class LLmFactory():
     @staticmethod
@@ -19,10 +23,13 @@ class Llm:
         self.generations = Generations()
 
 
-    def generate_code(self, language: str, platform: str, task: str, model: str) -> str:
+    def generate_code(self, language: str, 
+                      platform: str, 
+                      task: str,
+                      retriever) -> str:
         # Формируем шаблон промта для модели
         generatePrompt = ChatPromptTemplate.from_messages([
-            ("system", "Ты - разработчик встаиваемых модулей на языке {language}.Платформа {platform}."),
+            ("system", "Ты - разработчик встаиваемых модулей на языке {language}.Платформа {platform}.Документация: {context}"),
             ("user", "Напиши код по задаче:{task}.В ответе только код, без комментариев и эмодзи.")
         ])
 
@@ -40,7 +47,8 @@ class Llm:
             # Получаем ответ от модели
             response = fullChain.invoke({"language":language, 
                                     "platform":platform,
-                                    "task":task})
+                                    "task":task,
+                                    "context":retriever | format_docs})
         except:
             raise ModelError()
         
