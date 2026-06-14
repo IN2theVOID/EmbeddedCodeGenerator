@@ -22,8 +22,18 @@ class Llm:
         self.llm = ChatOllama(model=model, temperature=0, base_url=config.LLM_BASE_URL)
         self.generations = Generations()
 
+    def generateCodeLog(self, language: str, 
+                        platform: str, 
+                        task: str,
+                        retriever) -> str:
+        '''Декоратор с логированием'''
+        log.info(f"Генерация. {language} {platform} {task}")
+        return self.generateCode(language=language,
+                                    platform=platform,
+                                    task=task,
+                                    retriever=retriever)
 
-    def generate_code(self, language: str, 
+    def generateCode(self, language: str, 
                       platform: str, 
                       task: str,
                       retriever) -> str:

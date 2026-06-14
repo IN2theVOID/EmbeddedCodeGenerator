@@ -111,7 +111,7 @@ async def generate_code(request: Request, language: str, platform: str, task: st
             audit.add_record(username=username, record="Generation: " + language + " " + platform + " " + task)
             
             try:
-                html_content = llm.generate_code(language=language,
+                html_content = llm.generateCodeLog(language=language,
                                                 platform=platform,
                                                 task=task,
                                                 retriever=request.state.retriever)

@@ -2,7 +2,7 @@ import logging
 
 class ECDLogger:
     def __init__(self):
-        logging.basicConfig(level=logging.DEBUG)
+        logging.basicConfig(level=logging.INFO)
     
     def info(self, message: str) -> None:
         logging.info(message)
