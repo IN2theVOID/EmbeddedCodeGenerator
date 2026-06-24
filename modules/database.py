@@ -88,12 +88,12 @@ class DbRecords(DbBaseQueryClass):
 
 class DbDevice(DbBaseQueryClass):  
     def get_info(self, label: str):
-        self._cursor.execute("SELECT * FROM devices WHERE label = '{label}'")
+        self._cursor.execute(f"SELECT * FROM devices WHERE label = '{label}'")
         result = self._cursor.fetchall()
         return result
 
 class DbGenerations(DbBaseQueryClass):
     def get_info(self, task: str):
-        self._cursor.execute("SELECT * FROM generations WHERE task = '{task}'")
+        self._cursor.execute(f"SELECT * FROM generations WHERE task = '{task}'")
         result = self._cursor.fetchall()
         return result 
