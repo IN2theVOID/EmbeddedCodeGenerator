@@ -1,3 +1,5 @@
+from cProfile import label
+
 from fastapi.responses import HTMLResponse
 from fastapi import  Request, Form, APIRouter
 from fastapi.responses import HTMLResponse
@@ -7,8 +9,8 @@ from starlette.templating import _TemplateResponse
 from prometheus_client import Counter
 
 from modules.auth import Auth
-from modules.database import Audit, Info
-from modules.llm import Llm, LLmFactory
+from modules.database import Audit, DbRecords
+from modules.llm import LLmFactory
 from modules.deploy import DeployToDevice
 from modules.exceptions import ModelError, DeployError
 from modules.logger import log
@@ -33,17 +35,20 @@ def emb_code_gen_form(request: Request) -> HTMLResponse:
     if request.cookies.get("session_id"):
         isAuth, role, username = auth.checkAuth(request.cookies.get("session_id"))
         if isAuth and role == "user":
-            info = Info()
+            info = DbRecords()
 
-            languages = info.get_records("languages", "label")
-            platforms = info.get_records("platforms", "label")
-            models = info.get_records("models", "label")
+            languages = info.get_info(table="languages", columns="label")
+            platforms = info.get_info(table="platforms", columns="label")
+            models = info.get_info(table="models", columns="label")
 
-            return templates.TemplateResponse("generator.html", {"request":     request, 
-                                                                "name":         username,
-                                                                "languages":    languages,
-                                                                "platforms":    platforms,
-                                                                "models":       models})
+            return templates.TemplateResponse("generator.html", {
+                "request":     request, 
+                "name":         username,
+                "languages":    languages,
+                "platforms":    platforms,
+                "models":       models,
+                }
+            )
     return templateInfoMessage("Вы не авторизованы!", request)
 
 
@@ -56,17 +61,20 @@ def deploy_form(request: Request) -> HTMLResponse:
     if request.cookies.get("session_id"):
         isAuth, role, username = auth.checkAuth(request.cookies.get("session_id"))
         if isAuth and role == "user":
-            info = Info()
+            info = DbRecords()
             
-            devices = info.get_records("devices", "label,address,type")
-            device_types = info.get_records("device_type", "label")
-            generations = info.get_records("generations", "task,code")
+            devices = info.get_info(table="devices", columns="label,address,type")
+            device_types = info.get_info(table="device_type", columns="label")
+            generations = info.get_info(table="generations", columns="task,code")
 
-            return templates.TemplateResponse("deploy.html", {"request":             request, 
-                                                                "name":                 username,
-                                                                "devices":              devices,
-                                                                "device_types":         device_types,
-                                                                "generations":          generations})
+            return templates.TemplateResponse("deploy.html", {
+                "request":             request, 
+                "name":                 username,
+                "devices":              devices,
+                "device_types":         device_types,
+                "generations":          generations,
+                }
+            )
     return templateInfoMessage("Вы не авторизованы!", request)
 
 # Развертывание (api)
@@ -124,5 +132,8 @@ async def generate_code(request: Request, language: str, platform: str, task: st
         
 def templateInfoMessage(message: str, request: Request) -> _TemplateResponse:
     return templates.TemplateResponse(
-                "message.html", {"request": request, 
-                                 "message": message})
+                "message.html", {
+                    "request": request, 
+                    "message": message,
+                    }
+                )

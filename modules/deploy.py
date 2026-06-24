@@ -1,13 +1,12 @@
 from abc import ABC
-from ast import List
-from modules.database import Info
 import subprocess
 
+from modules.database import DbGenerations, DbDevice
 from modules.exceptions import DeployError
 from modules.logger import log
 
 class Deploy(ABC):
-    def deploy(self, devices: List, generation: str):
+    def deploy(self, devices: list, generation: str):
         ...
 
 class DeployToDevice(Deploy):
@@ -15,14 +14,15 @@ class DeployToDevice(Deploy):
         try:
             # Список для сбора результатов выполнения каждого скрипта
             deployment_results = []
-            info = Info()
-            code = info.getGenerationDataByTask(generation)[0][1]
+            genInfo = DbGenerations()
+            deviceInfo = DbDevice()
+            code = genInfo.get_info(generation)[0][1]
             log.info(code)
             for device in devices:
-                log.info(info.getDeviceDataByLabel(device))
-                label = info.getDeviceDataByLabel(device)[0][0]
-                ip = info.getDeviceDataByLabel(device)[0][1]
-                type = info.getDeviceDataByLabel(device)[0][2]
+                log.info(deviceInfo.get_info(device))
+                label = deviceInfo.get_info(device)[0][0]
+                ip = deviceInfo.get_info(device)[0][1]
+                type = deviceInfo.get_info(device)[0][2]
                 log.info("Start deploy to: " + label + " " + ip + " " + type)
 
                 with open("code.txt", "w") as file:

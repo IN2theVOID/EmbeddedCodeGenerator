@@ -1,3 +1,5 @@
+from doctest import DebugRunner
+
 from fastapi import APIRouter, Cookie, Request, Form
 from typing import Annotated
 from fastapi.responses import HTMLResponse
@@ -5,7 +7,7 @@ from fastapi.templating import Jinja2Templates
 from starlette.templating import _TemplateResponse
 
 from modules.auth import Auth
-from modules.database import Info
+from modules.database import DbRecords
 
 admin_router = APIRouter()
 
@@ -23,14 +25,14 @@ def admin_console(request: Request) -> HTMLResponse:
     if request.cookies.get("session_id"):
         isAuth, role, username = auth.checkAuth(request.cookies.get("session_id"))
         if isAuth and role == "admin":
-            info = Info()
+            info = DbRecords()
             
-            users = info.get_records("users", "username")
-            roles = info.get_records("roles", "username, role")
-            languages = info.get_records("languages", "label")
-            platforms = info.get_records("platforms", "label")
-            models = info.get_records("models", "label")
-            devices = info.get_records("devices", "label,address")
+            users = info.get_info(table="users", columns="username")
+            roles = info.get_info(table="roles", columns="username, role")
+            languages = info.get_info(table="languages", columns="label")
+            platforms = info.get_info(table="platforms", columns="label")
+            models = info.get_info(table="models", columns="label")
+            devices = info.get_info(table="devices", columns="label,address")
 
             return templates.TemplateResponse("admin.html", {"request":         request, 
                                                                 "name":         username,

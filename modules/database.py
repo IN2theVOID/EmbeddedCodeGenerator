@@ -1,5 +1,6 @@
 import sqlite3
 from datetime import datetime
+from typing import Generator, Protocol
 
 from modules.exceptions import NoRoleMappingToUser
 
@@ -51,27 +52,6 @@ class Audit:
         for record in result:
             yield record
 
-class Info:
-    def __init__(self) -> None:
-        self._connection = sqlite3.connect("database.db", check_same_thread=False)
-        self._cursor = self._connection.cursor()
-
-    def get_records(self, table: str, columns: str):
-        self._cursor.execute("SELECT " + columns + " FROM " + table)
-        result = self._cursor.fetchall()
-        for record in result:
-            yield record
-    
-    def getDeviceDataByLabel(self, label: str):
-        self._cursor.execute("SELECT * FROM devices WHERE label = '" + label + "'")
-        result = self._cursor.fetchall()
-        return result
-    
-    def getGenerationDataByTask(self, task: str):
-        self._cursor.execute("SELECT * FROM generations WHERE task = '" + task + "'")
-        result = self._cursor.fetchall()
-        return result
-
 
 class Generations:
     def __init__(self) -> None:
@@ -81,3 +61,39 @@ class Generations:
     def add_generation(self, task: str, code: str):
         self._cursor.execute("INSERT INTO generations (task, code) VALUES (?, ?)", (task, code))
         self._connection.commit()
+
+class InfoProtocol(Protocol):
+    '''Протокол запроса в БД'''
+    def __init__(self):
+        ...
+    
+    def get_info(self, *args, **kwargs) -> Generator | list | str:
+        ...
+
+class DbBaseQueryClass(InfoProtocol):
+    '''Базовый класс запроса в БД'''
+    def __init__(self) -> None:
+        self._connection = sqlite3.connect("database.db", check_same_thread=False)
+        self._cursor = self._connection.cursor()
+    def get_info(self, *args, **kwargs):
+        return "DbBaseQueryClass"
+        
+
+class DbRecords(DbBaseQueryClass):
+    def get_info(self, columns: str, table: str):
+        self._cursor.execute(f"SELECT {columns} FROM {table}")
+        result = self._cursor.fetchall()
+        for record in result:
+            yield record
+
+class DbDevice(DbBaseQueryClass):  
+    def get_info(self, label: str):
+        self._cursor.execute("SELECT * FROM devices WHERE label = '{label}'")
+        result = self._cursor.fetchall()
+        return result
+
+class DbGenerations(DbBaseQueryClass):
+    def get_info(self, task: str):
+        self._cursor.execute("SELECT * FROM generations WHERE task = '{task}'")
+        result = self._cursor.fetchall()
+        return result 
