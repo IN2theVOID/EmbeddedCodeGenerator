@@ -3,6 +3,7 @@ from datetime import datetime
 from typing import Generator, Protocol
 
 from modules.exceptions import NoRoleMappingToUser
+from modules.logger import LoggerDecorator
 
 
 class User:
@@ -10,8 +11,9 @@ class User:
         self._connection = sqlite3.connect("database.db", check_same_thread=False)
         self._cursor = self._connection.cursor()
 
+    @LoggerDecorator()
     def check_creds(self, username: str, password: str) -> bool:
-        self._cursor.execute("SELECT username, password FROM users WHERE username = '" + username + "' AND password = '" + password + "'")
+        self._cursor.execute("SELECT 1 FROM users WHERE username = ? AND password = ? LIMIT 1", (username, password))
         result = self._cursor.fetchall()
         if len(result) < 1:
             return False
@@ -21,11 +23,13 @@ class User:
     def add_user(self, username: str, password: str, role: str) -> None:
         pass
 
+
 class Role:
     def __init__(self) -> None:
         self._connection = sqlite3.connect("database.db", check_same_thread=False)
         self._cursor = self._connection.cursor()
 
+    @LoggerDecorator()
     def get_role_by_user(self, username: str) -> str:
         self._cursor.execute("SELECT role FROM roles WHERE username = '" + username + "'")
         result = self._cursor.fetchall()
@@ -46,6 +50,7 @@ class Audit:
         self._cursor.execute("INSERT INTO audit (date, username, record) VALUES (?, ?, ?)", (datetime.now(), username, record))
         self._connection.commit()
 
+    @LoggerDecorator()
     def get_all_records(self) -> sqlite3.Generator[sqlite3.Any, sqlite3.Any, None]:
         self._cursor.execute("SELECT date, username, record FROM audit LIMIT 30")
         result = self._cursor.fetchall()
@@ -57,10 +62,12 @@ class Generations:
     def __init__(self) -> None:
         self._connection = sqlite3.connect("database.db", check_same_thread=False)
         self._cursor = self._connection.cursor()
-
+    
+    @LoggerDecorator()
     def add_generation(self, task: str, code: str):
         self._cursor.execute("INSERT INTO generations (task, code) VALUES (?, ?)", (task, code))
         self._connection.commit()
+
 
 class InfoProtocol(Protocol):
     '''Протокол запроса в БД'''
@@ -69,6 +76,7 @@ class InfoProtocol(Protocol):
     
     def get_info(self, *args, **kwargs) -> Generator | list | str:
         ...
+
 
 class DbBaseQueryClass(InfoProtocol):
     '''Базовый класс запроса в БД'''
@@ -80,6 +88,7 @@ class DbBaseQueryClass(InfoProtocol):
         
 
 class DbRecords(DbBaseQueryClass):
+    @LoggerDecorator()
     def get_info(self, columns: str, table: str):
         self._cursor.execute(f"SELECT {columns} FROM {table}")
         result = self._cursor.fetchall()
@@ -87,12 +96,15 @@ class DbRecords(DbBaseQueryClass):
             yield record
 
 class DbDevice(DbBaseQueryClass):  
+    @LoggerDecorator()
     def get_info(self, label: str):
         self._cursor.execute(f"SELECT * FROM devices WHERE label = '{label}'")
         result = self._cursor.fetchall()
         return result
 
+
 class DbGenerations(DbBaseQueryClass):
+    @LoggerDecorator()
     def get_info(self, task: str):
         self._cursor.execute(f"SELECT * FROM generations WHERE task = '{task}'")
         result = self._cursor.fetchall()

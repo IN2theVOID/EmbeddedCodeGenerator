@@ -6,17 +6,13 @@ import html
 import config
 from modules.database import Generations
 from modules.exceptions import ModelError
-from modules.logger import log
+from modules.logger import log, LoggerDecorator
 
 def format_docs(docs):
     return "\n\n".join(doc.page_content for doc in docs)
 
-class LLmFactory():
-    @staticmethod
-    def getLlm(model) -> Llm:
-        return Llm(model=model)
-
 class Llm:
+    @LoggerDecorator()
     def __init__(self, model) -> None:
         # Настраиваем LLM-модель Ollama
         self.llm = ChatOllama(model=model, temperature=0, base_url=config.LLM_BASE_URL)
@@ -33,6 +29,7 @@ class Llm:
                                     task=task,
                                     retriever=retriever)
 
+    @LoggerDecorator()
     def generateCode(self, language: str, 
                       platform: str, 
                       task: str,
@@ -80,3 +77,9 @@ class Llm:
                                    code=response)
 
         return html_content
+
+class LLmFactory():
+    @staticmethod
+    @LoggerDecorator()
+    def getLlm(model) -> Llm:
+        return Llm(model=model)

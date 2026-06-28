@@ -1,6 +1,4 @@
-from doctest import DebugRunner
-
-from fastapi import APIRouter, Cookie, Request, Form
+from fastapi import APIRouter, Request, Form
 from typing import Annotated
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates

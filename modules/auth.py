@@ -6,7 +6,7 @@ from urllib import response
 
 from modules.database import User, Role, Audit
 from modules.exceptions import NoRoleMappingToUser
-from modules.logger import log
+from modules.logger import log, LoggerDecorator
 
 auth_tokens = []
 
@@ -14,6 +14,7 @@ class AuthResponseFactory:
     def __init__(self):
         self._role = Role()
 
+    @LoggerDecorator()
     def getAuthResponce(self, isAuth: bool, username: str) -> AuthResponse:
         authResponse = AuthResponse
         authResponse.isAuth = isAuth
@@ -38,6 +39,7 @@ class Auth:
         self._factory = AuthResponseFactory()
         self._audit = Audit()
 
+    @LoggerDecorator()
     def authUser(self, username: str, password: str) -> AuthResponse:
         try:
             if self._user.check_creds(username, password):
@@ -54,6 +56,7 @@ class Auth:
             response = self._factory.getAuthResponce(isAuth=False, username=username)
         return response
     
+    @LoggerDecorator()
     def checkAuth(self, token: str) -> tuple[Literal[True], str] | tuple[Literal[False], None]:
         log.info(token)
         role = None
@@ -65,9 +68,11 @@ class Auth:
         else:
             username = self.getUsernameFromToken(token=token)
             return False, role, username
-        
+    
+    @LoggerDecorator()
     def getRoleFromToken(self, token: str) -> str:
         return token.split(";")[3]
     
+    @LoggerDecorator()
     def getUsernameFromToken(self, token: str) -> str:
         return token.split(";")[1]

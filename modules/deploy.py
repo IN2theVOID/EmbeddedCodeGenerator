@@ -3,13 +3,14 @@ import subprocess
 
 from modules.database import DbGenerations, DbDevice
 from modules.exceptions import DeployError
-from modules.logger import log
+from modules.logger import log, LoggerDecorator
 
 class Deploy(ABC):
     def deploy(self, devices: list, generation: str):
         ...
 
 class DeployToDevice(Deploy):
+    @LoggerDecorator()
     def deploy(self, devices, generation):
         try:
             # Список для сбора результатов выполнения каждого скрипта
