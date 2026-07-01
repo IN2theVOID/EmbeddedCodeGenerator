@@ -19,3 +19,5 @@ venv
 test.py
 code.txt
 *.bin
+.pytest_cache
+*.pyc

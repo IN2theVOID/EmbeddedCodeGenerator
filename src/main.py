@@ -1,5 +1,5 @@
 import uvicorn
-import config
+import config as config
 from modules.controller import controller
 
 # Запуск сервера Uvicorn

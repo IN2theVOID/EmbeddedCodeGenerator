@@ -3,7 +3,7 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 import html
 
-import config
+import config as config
 from modules.database import Generations
 from modules.exceptions import ModelError
 from modules.logger import log, LoggerDecorator
