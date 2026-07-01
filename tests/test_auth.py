@@ -1,5 +1,5 @@
 
-from src.modules.auth import Auth, AuthResponse
+from src.modules.auth import Auth
 
 def test_auth():
     auth = Auth()
