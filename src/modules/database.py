@@ -7,8 +7,8 @@ from modules.logger import LoggerDecorator
 
 
 class User:
-    def __init__(self) -> None:
-        self._connection = sqlite3.connect("database.db", check_same_thread=False)
+    def __init__(self, dbFile: str = "database.db") -> None:
+        self._connection = sqlite3.connect(dbFile, check_same_thread=False)
         self._cursor = self._connection.cursor()
 
     @LoggerDecorator()
@@ -25,8 +25,8 @@ class User:
 
 
 class Role:
-    def __init__(self) -> None:
-        self._connection = sqlite3.connect("database.db", check_same_thread=False)
+    def __init__(self, dbFile: str = "database.db") -> None:
+        self._connection = sqlite3.connect(dbFile, check_same_thread=False)
         self._cursor = self._connection.cursor()
 
     @LoggerDecorator()
@@ -42,8 +42,8 @@ class Role:
         pass
 
 class Audit:
-    def __init__(self) -> None:
-        self._connection = sqlite3.connect("database.db", check_same_thread=False)
+    def __init__(self, dbFile: str = "database.db") -> None:
+        self._connection = sqlite3.connect(dbFile, check_same_thread=False)
         self._cursor = self._connection.cursor()
 
     def add_record(self, username: str, record: str) -> None:
@@ -59,8 +59,8 @@ class Audit:
 
 
 class Generations:
-    def __init__(self) -> None:
-        self._connection = sqlite3.connect("database.db", check_same_thread=False)
+    def __init__(self, dbFile: str = "database.db") -> None:
+        self._connection = sqlite3.connect(dbFile, check_same_thread=False)
         self._cursor = self._connection.cursor()
     
     @LoggerDecorator()
@@ -71,7 +71,7 @@ class Generations:
 
 class InfoProtocol(Protocol):
     '''Протокол запроса в БД'''
-    def __init__(self):
+    def __init__(self, dbFile):
         ...
     
     def get_info(self, *args, **kwargs) -> Generator | list | str:
@@ -80,8 +80,8 @@ class InfoProtocol(Protocol):
 
 class DbBaseQueryClass(InfoProtocol):
     '''Базовый класс запроса в БД'''
-    def __init__(self) -> None:
-        self._connection = sqlite3.connect("database.db", check_same_thread=False)
+    def __init__(self, dbFile: str = "database.db") -> None:
+        self._connection = sqlite3.connect(dbFile, check_same_thread=False)
         self._cursor = self._connection.cursor()
     def get_info(self, *args, **kwargs):
         return "DbBaseQueryClass"
