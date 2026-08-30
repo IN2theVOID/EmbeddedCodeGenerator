@@ -47,7 +47,6 @@ def admin_console(request: Request) -> HTMLResponse:
 def create_user(
         request: Request, 
         createusername: Annotated[str, Form()], 
-        password: Annotated[str, Form()], 
         role: Annotated[str, Form()],
     ):
     '''
