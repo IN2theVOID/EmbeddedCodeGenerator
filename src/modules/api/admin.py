@@ -2,17 +2,15 @@ from fastapi import APIRouter, Request, Form
 from typing import Annotated
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
-from starlette.templating import _TemplateResponse
 
 from modules.auth import Auth
 from modules.database import DbRecords
+from modules.api.templating import templateInfoMessage, templates
 
 admin_router = APIRouter()
 
 # Аутентификация
 auth = Auth()
-
-templates = Jinja2Templates(directory="templates")
 
 # Консоль администратора
 @admin_router.get("/admin_console")
@@ -59,11 +57,3 @@ def create_user(
             return templateInfoMessage("Пользователь " + createusername + " успешно создан", request)
             
     return templateInfoMessage("Вы не авторизованы!", request)
-
-def templateInfoMessage(
-        message: str, 
-        request: Request,
-    ) -> _TemplateResponse:
-    return templates.TemplateResponse(
-                "message.html", {"request": request, 
-                                 "message": message})

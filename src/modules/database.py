@@ -52,7 +52,7 @@ class Audit:
 
     @LoggerDecorator()
     def get_all_records(self) -> sqlite3.Generator[sqlite3.Any, sqlite3.Any, None]:
-        self._cursor.execute("SELECT date, username, record FROM audit LIMIT 30")
+        self._cursor.execute("SELECT date, username, record FROM audit ORDER BY date DESC LIMIT 30")
         result = self._cursor.fetchall()
         for record in result:
             yield record

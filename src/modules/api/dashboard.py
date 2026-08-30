@@ -2,17 +2,15 @@ from fastapi.responses import HTMLResponse
 
 from fastapi import Request, APIRouter
 from fastapi.templating import Jinja2Templates
-from starlette.templating import _TemplateResponse
 
 from modules.auth import Auth
 from modules.database import DbRecords
+from modules.api.templating import templateInfoMessage, templates
 
 dashboard_router = APIRouter()
 
 # Аутентификация
 auth = Auth()
-
-templates = Jinja2Templates(directory="templates")
 
 # Дашборд
 @dashboard_router.get("/dashboard")
@@ -42,11 +40,3 @@ def dashboard(request: Request) -> HTMLResponse:
                 }
             )
     return templateInfoMessage("Вы не авторизованы!", request)
-
-def templateInfoMessage(
-        message: str, 
-        request: Request,
-    ) -> _TemplateResponse:
-    return templates.TemplateResponse(
-                "message.html", {"request": request, 
-                                 "message": message})

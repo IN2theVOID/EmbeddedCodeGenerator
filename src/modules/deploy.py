@@ -6,7 +6,11 @@ from modules.exceptions import DeployError
 from modules.logger import log, LoggerDecorator
 
 class Deploy(ABC):
-    def deploy(self, devices: list, generation: str):
+    def deploy(
+                self, 
+                devices: list, 
+                generation: str,
+            ):
         ...
 
 class DeployToDevice(Deploy):

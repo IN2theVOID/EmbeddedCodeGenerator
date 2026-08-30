@@ -1,14 +1,15 @@
-import base64
 import datetime
-from encodings.base64_codec import base64_encode
 from typing import Literal
-from urllib import response
 
 from modules.database import User, Role, Audit
 from modules.exceptions import NoRoleMappingToUser
 from modules.logger import log, LoggerDecorator
 
 auth_tokens = []
+
+class AuthResponse:
+    isAuth: bool
+    cookieString: str
 
 class AuthResponseFactory:
     def __init__(self):
@@ -28,10 +29,6 @@ class AuthResponseFactory:
                 raise NoRoleMappingToUser from e
         authResponse.cookieString = token
         return authResponse
-
-class AuthResponse:
-    isAuth: bool
-    cookieString: str
 
 class Auth:
     def __init__(self) -> None:

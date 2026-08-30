@@ -1,17 +1,14 @@
 from fastapi.responses import HTMLResponse
 from fastapi import  Request, APIRouter
-from fastapi.templating import Jinja2Templates
-from starlette.templating import _TemplateResponse
 
 from modules.auth import Auth
 from modules.database import Audit
+from modules.api.templating import templateInfoMessage, templates
 
 audit_router = APIRouter()
 
 # Аутентификация
 auth = Auth()
-
-templates = Jinja2Templates(directory="templates")
 
 @audit_router.get("/audit")
 def audit_form(request: Request) -> HTMLResponse:
@@ -28,11 +25,3 @@ def audit_form(request: Request) -> HTMLResponse:
                                "name": username, 
                                "message": auditRecords})
     return templateInfoMessage("Вы не авторизованы!", request)
-
-def templateInfoMessage(
-        message: str, 
-        request: Request,
-    ) -> _TemplateResponse:
-    return templates.TemplateResponse(
-                "message.html", {"request": request, 
-                                 "message": message})

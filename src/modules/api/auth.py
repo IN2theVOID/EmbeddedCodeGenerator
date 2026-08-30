@@ -2,16 +2,14 @@ from fastapi import APIRouter, Response, Request, Form
 from typing import Annotated
 from fastapi.responses import RedirectResponse, HTMLResponse
 from fastapi.templating import Jinja2Templates
-from starlette.templating import _TemplateResponse
 
 from modules.auth import Auth
+from modules.api.templating import templateInfoMessage, templates
 
 auth_router = APIRouter()
 
 # Аутентификация
 auth = Auth()
-
-templates = Jinja2Templates(directory="templates")
 
 # Аутентификация
 @auth_router.get("/")
@@ -54,11 +52,3 @@ def auth_api(
         return response
     else:
         return templateInfoMessage("Аутентификация неуспешна!", request)
-
-def templateInfoMessage(
-        message: str, 
-        request: Request,
-    ) -> _TemplateResponse:
-    return templates.TemplateResponse(
-                "message.html", {"request": request, 
-                                 "message": message})

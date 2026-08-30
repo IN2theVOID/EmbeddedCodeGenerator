@@ -1,27 +1,20 @@
 from fastapi.responses import HTMLResponse
-from fastapi import  Request, Form, APIRouter
-from fastapi.templating import Jinja2Templates
-from typing import List
-from starlette.templating import _TemplateResponse
+from fastapi import  Request, APIRouter
 from prometheus_client import Counter
 
 from modules.auth import Auth
 from modules.database import Audit, DbRecords
 from modules.llm import LLmFactory
-from modules.deploy import DeployToDevice
-from modules.exceptions import ModelError, DeployError
-from modules.logger import log
+from modules.exceptions import ModelError
+from modules.api.templating import templateInfoMessage, templates
 
 generator_router = APIRouter()
 
 # Аутентификация
 auth = Auth()
 
-templates = Jinja2Templates(directory="templates")
-
 # Prometheus метрики
 prometheus_generate_metric = Counter("generations", "Code generations count")
-prometheus_deploy_metric = Counter("deployments", "Code deployments count")
 
 # Генератор (страница)
 @generator_router.get("/code_generator")
@@ -48,59 +41,6 @@ def emb_code_gen_form(request: Request) -> HTMLResponse:
             )
     return templateInfoMessage("Вы не авторизованы!", request)
 
-
-# Развертывание (страница)
-@generator_router.get("/deploy")
-def deploy_form(request: Request) -> HTMLResponse:
-    '''
-    Развертывание (страница)
-    '''
-    if request.cookies.get("session_id"):
-        isAuth, role, username = auth.checkAuth(request.cookies.get("session_id"))
-        if isAuth and role == "user":
-            info = DbRecords()
-            
-            devices = info.get_info(table="devices", columns="label,address,type")
-            device_types = info.get_info(table="device_type", columns="label")
-            generations = info.get_info(table="generations", columns="task,code")
-
-            return templates.TemplateResponse("deploy.html", {
-                "request":             request, 
-                "name":                 username,
-                "devices":              devices,
-                "device_types":         device_types,
-                "generations":          generations,
-                }
-            )
-    return templateInfoMessage("Вы не авторизованы!", request)
-
-# Развертывание (api)
-@generator_router.post("/deploy")
-def deploy_api(
-    request: Request,
-    devices: List[str] = Form(...),      # Получаем список выбранных устройств
-    generation: str = Form(...),         # Получаем выбранную генерацию (код)
-):
-    '''
-    Развертывание (api)
-    '''
-    if request.cookies.get("session_id"):
-        isAuth, role, username = auth.checkAuth(request.cookies.get("session_id"))
-        if isAuth and role == "user":
-            deploy = DeployToDevice()
-            audit = Audit()
-            audit.add_record(username=username, record="Deploy: " + str(devices) + " " + generation[:15])
-            log.info("Получен запрос на установку!")
-            log.info(f"Выбранные устройства: {devices}")
-            log.info(f"Код генерации: {generation}")
-            try:
-                response = deploy.deploy(devices=devices, generation=generation)
-                prometheus_deploy_metric.inc()
-            except DeployError:
-                return templateInfoMessage(f"Ошибка разворачивания на {devices}!", request)
-            
-            return templateInfoMessage(response, request)
-    return templateInfoMessage("Вы не авторизованы!", request)
 
 # Обработчик GET-запросов, апи генератора
 @generator_router.get("/emb_code_gen", response_class=HTMLResponse)
@@ -130,14 +70,3 @@ async def generate_code(
 
             return HTMLResponse(content=html_content, 
                                 status_code=200)
-        
-def templateInfoMessage(
-        message: str, 
-        request: Request,
-    ) -> _TemplateResponse:
-    return templates.TemplateResponse(
-                "message.html", {
-                    "request": request, 
-                    "message": message,
-                    }
-                )
