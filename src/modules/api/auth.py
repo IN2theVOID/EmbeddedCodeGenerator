@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Response, Cookie, Request, Form
+from fastapi import APIRouter, Response, Request, Form
 from typing import Annotated
 from fastapi.responses import RedirectResponse, HTMLResponse
 from fastapi.templating import Jinja2Templates
@@ -22,10 +22,15 @@ def auth_page(request: Request) -> HTMLResponse:
     return templates.TemplateResponse("auth.html", {"request": request})
 
 @auth_router.post("/auth")
-def auth_api(request: Request, response: Response, username: Annotated[str, Form()], password: Annotated[str, Form()]):
+def auth_api(
+        request: Request, 
+        response: Response, 
+        username: Annotated[str, Form()], 
+        password: Annotated[str, Form()],
+    ):
     '''
-    API Авторизации
     В случае успеха выдается session_id
+    API Авторизации
     '''
 
     if request.cookies.get("session_id"):
@@ -50,7 +55,10 @@ def auth_api(request: Request, response: Response, username: Annotated[str, Form
     else:
         return templateInfoMessage("Аутентификация неуспешна!", request)
 
-def templateInfoMessage(message: str, request: Request) -> _TemplateResponse:
+def templateInfoMessage(
+        message: str, 
+        request: Request,
+    ) -> _TemplateResponse:
     return templates.TemplateResponse(
                 "message.html", {"request": request, 
                                  "message": message})

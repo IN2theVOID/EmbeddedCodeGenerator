@@ -1,8 +1,5 @@
-from cProfile import label
-
 from fastapi.responses import HTMLResponse
 from fastapi import  Request, Form, APIRouter
-from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from typing import List
 from starlette.templating import _TemplateResponse
@@ -82,7 +79,7 @@ def deploy_form(request: Request) -> HTMLResponse:
 def deploy_api(
     request: Request,
     devices: List[str] = Form(...),      # Получаем список выбранных устройств
-    generation: str = Form(...)          # Получаем выбранную генерацию (код)
+    generation: str = Form(...),         # Получаем выбранную генерацию (код)
 ):
     '''
     Развертывание (api)
@@ -93,7 +90,7 @@ def deploy_api(
             deploy = DeployToDevice()
             audit = Audit()
             audit.add_record(username=username, record="Deploy: " + str(devices) + " " + generation[:15])
-            log.info(f"Получен запрос на установку!")
+            log.info("Получен запрос на установку!")
             log.info(f"Выбранные устройства: {devices}")
             log.info(f"Код генерации: {generation}")
             try:
@@ -107,7 +104,11 @@ def deploy_api(
 
 # Обработчик GET-запросов, апи генератора
 @generator_router.get("/emb_code_gen", response_class=HTMLResponse)
-async def generate_code(request: Request, language: str, platform: str, task: str, model: str) -> HTMLResponse:
+async def generate_code(
+        request: Request, 
+        language: str, platform: str, 
+        task: str, model: str,
+    ) -> HTMLResponse:
     '''
     Обработчик GET-запросов, апи генератора
     '''
@@ -130,7 +131,10 @@ async def generate_code(request: Request, language: str, platform: str, task: st
             return HTMLResponse(content=html_content, 
                                 status_code=200)
         
-def templateInfoMessage(message: str, request: Request) -> _TemplateResponse:
+def templateInfoMessage(
+        message: str, 
+        request: Request,
+    ) -> _TemplateResponse:
     return templates.TemplateResponse(
                 "message.html", {
                     "request": request, 

@@ -44,7 +44,12 @@ def admin_console(request: Request) -> HTMLResponse:
 
 # Создание пользователя
 @admin_router.post("/create_user")
-def create_user(request: Request, createusername: Annotated[str, Form()], password: Annotated[str, Form()], role: Annotated[str, Form()]):
+def create_user(
+        request: Request, 
+        createusername: Annotated[str, Form()], 
+        password: Annotated[str, Form()], 
+        role: Annotated[str, Form()],
+    ):
     '''
     Создание нового пользователя
     '''
@@ -56,7 +61,10 @@ def create_user(request: Request, createusername: Annotated[str, Form()], passwo
             
     return templateInfoMessage("Вы не авторизованы!", request)
 
-def templateInfoMessage(message: str, request: Request) -> _TemplateResponse:
+def templateInfoMessage(
+        message: str, 
+        request: Request,
+    ) -> _TemplateResponse:
     return templates.TemplateResponse(
                 "message.html", {"request": request, 
                                  "message": message})
